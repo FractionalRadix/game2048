@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">2048</string>
+    <string name="up">Up</string>
+    <string name="left">Left</string>
+    <string name="down">Down</string>
+    <string name="right">Right</string>
+</resources>
