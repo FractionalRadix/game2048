@@ -10,6 +10,11 @@ class GameState : ViewModel() {
     private val game = HashMap<Coor,Int>()
     private val random = Random()
 
+    /**
+     * Check if the game has only just started, or if `init` is called due to an orientation change.
+     */
+    private var startOfGame = true
+
     companion object StaticMethods {
 
         fun shift(row: Map<Int, Int>): MutableMap<Int, Int> {
@@ -69,9 +74,6 @@ class GameState : ViewModel() {
          * @return A new row, where all elements are shifted as far to the highest position as possible, with adjacent equal fields collapsed int one.
          */
         fun shiftAndCollapse(row: Map<Int, Int>): Map<Int, Int> {
-            //val shiftedRow = mutableMapOf<Int, Int>()
-
-            //row.forEach { shiftedRow[it.key] = it.value}
 
             var shiftedRow = shift(row)
 
@@ -105,11 +107,42 @@ class GameState : ViewModel() {
             }
             return reversedList
         }
+
+        /**
+         * Determine of two mappings from Int to Int, contain precisely the same mappings.
+         * @param map1 A map from Int to Int.
+         * @param map2 A map from Int to Int.
+         * @return <code>true<code> if and only if map1 contains exactly the same mappings as map2.
+         */
+        fun equal(map1: Map<Int,Int>, map2:Map<Int,Int>): Boolean {
+            val keySet1 = map1.keys
+            val keySet2 = map2.keys
+
+            if (keySet1.size != keySet2.size) {
+                return false
+            }
+
+            if (!keySet1.containsAll(keySet2)) {
+                return false
+            }
+
+            val mappingsDiffer = keySet1.any { map1[it] != map2[it] }
+            if (mappingsDiffer) {
+                return false
+            }
+
+            return true
+        }
     }
 
-    //TODO!+ Call this one...
     fun init() {
-        placeNewValue()
+        /* Initialize the game, but only if this is really a new game.
+         * If the user has only changed the orientation of the device, do nothing.
+         */
+        if (startOfGame) {
+            placeNewValue()
+            startOfGame = false
+        }
     }
 
     //TODO?~ Use an Observable...?
@@ -143,14 +176,19 @@ class GameState : ViewModel() {
 
     /**
      * Adjust the game board if the player moves values to the right.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun right() {
+    fun right(): Boolean {
+        var changeOccurred = false
         for (rowIdx in 1..4) {
             val row = game
                 .filterKeys { it.row == rowIdx }
                 .map { Pair(it.key.col, it.value) }
                 .toMap()
             val shiftedRow = shiftAndCollapse(row)
+            if (!equal(row, shiftedRow)) {
+                changeOccurred = true
+            }
 
             // Remove the old row.
             game.keys.removeIf { it.row == rowIdx }
@@ -159,12 +197,16 @@ class GameState : ViewModel() {
                 game[Coor(rowIdx, elt.key)] = elt.value
             }
         }
+
+        return changeOccurred
     }
 
     /**
      * Adjust the game board if the player moves values to the left.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun left() {
+    fun left(): Boolean {
+        var changeOccurred = false
         for (rowIdx in 1..4) {
             val row = game
                 .filterKeys { it.row == rowIdx }
@@ -172,6 +214,9 @@ class GameState : ViewModel() {
                 .toMap()
 
             val shiftedRow = shiftAndCollapse(reverseRowOrColumn(row))
+            if (!equal(reverseRowOrColumn(row), shiftedRow)) {
+                changeOccurred = true
+            }
 
             // Remove the old row.
             game.keys.removeIf { it.row == rowIdx }
@@ -180,18 +225,26 @@ class GameState : ViewModel() {
                 game[Coor(rowIdx, 5 - elt.key)] = elt.value
             }
         }
+
+        return changeOccurred
     }
 
     /**
      * Adjust the game board if the player moves values up.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun up() {
+    fun up(): Boolean {
+        var changeOccurred = false
         for (colIdx in 1..4) {
             val col = game
                 .filterKeys { it.col == colIdx }
                 .map { Pair(it.key.row, it.value) }
                 .toMap()
             val shiftedCol = shiftAndCollapse(reverseRowOrColumn(col))
+
+            if (!equal(reverseRowOrColumn(col), shiftedCol)) {
+                changeOccurred = true
+            }
 
             // Remove the old column.
             game.keys.removeIf { it.col == colIdx }
@@ -200,18 +253,25 @@ class GameState : ViewModel() {
                 game[Coor(5 - elt.key, colIdx)] = elt.value
             }
         }
+        return changeOccurred
     }
 
     /**
      * Adjust the game board if the player moves values down.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun down() {
+    fun down(): Boolean {
+        var changeOccurred = false
         for (colIdx in 1..4) {
             val col = game
                 .filterKeys { it.col == colIdx }
                 .map { Pair(it.key.row, it.value) }
                 .toMap()
             val shiftedCol = shiftAndCollapse(col)
+
+            if (!equal(col, shiftedCol)) {
+                changeOccurred = true
+            }
 
             // Remove the old column.
             game.keys.removeIf { it.col == colIdx }
@@ -220,6 +280,7 @@ class GameState : ViewModel() {
                 game[Coor(elt.key, colIdx)] = elt.value
             }
         }
-    }
 
+        return changeOccurred
+    }
 }
