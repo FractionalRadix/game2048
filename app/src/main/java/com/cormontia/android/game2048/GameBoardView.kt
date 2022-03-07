@@ -8,10 +8,11 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 
 /**
- * TODO: document your custom view class.
+ * View to display a 2048 board.
  */
 class GameBoardView : View {
 
@@ -41,8 +42,17 @@ class GameBoardView : View {
         invalidate()    // Force repaint.
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        //super.onSizeChanged(w, h, oldw, oldh)
+        val xpad = paddingLeft + paddingRight
+        val ypad = paddingTop + paddingBottom
+        val widthForDrawing = w - xpad
+        val heightForDrawing = h - ypad
+        Log.i("2048-game", "widthForDrawing==$widthForDrawing, heightForDrawing=$heightForDrawing.")
+    }
+
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+        //super.onDraw(canvas)
 
         // TODO: consider storing these as member variables to reduce
         // allocations per draw cycle.
@@ -51,24 +61,37 @@ class GameBoardView : View {
         val paddingRight = paddingRight
         val paddingBottom = paddingBottom
 
+        Log.i("2048-game", "paddingLeft==$paddingLeft.")
+
         val contentWidth = width - paddingLeft - paddingRight
         val contentHeight = height - paddingTop - paddingBottom
 
-        val blackPaint = Paint(Color.BLACK)
+        Log.i("2048-game", "width==$width, height==$height")
+
+        val blackPaint = Paint()
         blackPaint.style = Paint.Style.STROKE
         blackPaint.strokeWidth = 4f
         blackPaint.textSize = 50f
-        val rect = Rect(10,10,210,210)
-        //canvas.drawRect(rect, blackPaint)
+
+        //TODO!= A test rectangle to see how the x and y coordinates are working.
+        // It seems that the y coordinate is relative to the Constraint Layout, but the x coordinate is not?!?!?!
+        val redPaint = Paint()
+        redPaint.color = Color.RED
+        redPaint.style = Paint.Style.FILL_AND_STROKE
+        redPaint.strokeWidth = 4f
+        val rect = Rect(0,0,210,210)
+        canvas.drawRect(rect, redPaint)
+
         for (r in 1..4) {
             for (c in 1..4) {
-                val x = 150 + 200 * (c-1)
-                val y = 200 + 200 * (r-1)
-                val smallRect = Rect(x, y, x+190, y+190)
+                val x = paddingLeft + 100 * (c-1)
+                val y = paddingTop + 100 * (r-1)
+                val smallRect = Rect(x, y, x+90, y+90)
                 canvas.drawRect(smallRect, blackPaint)
 
                 val fieldValue = gameBoard[Coor(r,c)]
                 if (fieldValue != null) {
+                    //TODO!~ Adjust these offsets...
                     canvas.drawText(fieldValue.toString(), (x + 50).toFloat(), (y + 150).toFloat(), blackPaint)
                 }
             }

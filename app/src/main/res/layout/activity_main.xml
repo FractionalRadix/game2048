@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <!--LinearLayout
         android:id="@+id/buttonPanel"
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -39,77 +39,75 @@
             android:layout_height="wrap_content"
             android:text="@string/right"
             android:onClick="right"/>
-    </LinearLayout>
+    </LinearLayout-->
 
-    <!-- A dirty trick to center the "up" button: make it the middle item of a LinearLayout.
-        Surely ConstraintLayout has a better way?
+    <!-- Top row: just the "Up" button. -->
+    <Button
+        android:id="@+id/upButton"
+        android:text="@string/up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <!-- Middle row: the "left" button, the GameBoardView, and the "right" button. -->
+    <!-- I tried to center the GameBoardView by making its start- and end-constraint both "parent".
+         But in another episode of "ConstraintLayout making things unnecessarily complicated",
+         that made the x=0 line in the Custom view, equal to the left hand side of the SCREEN.
+         So, I need to find another way of centering the Custom view.
     -->
-    <LinearLayout
-        android:id="@+id/upButtonPanel"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/buttonPanel">
-        <Button
-            android:id="@+id/up2"
-            android:text="@string/up"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/buttonPanel"
-            android:gravity="center"
-        />
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/middleRow"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/leftButton"
+        android:text="@string/left"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/upButtonPanel"
-        >
-        <Button
-            android:text="@string/left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
-        <com.cormontia.android.game2048.GameBoardView
-            android:id="@+id/gameBoardView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="100dp"
-            android:maxHeight="100dp"
-            app:layout_constraintTop_toBottomOf="@id/buttonPanel"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
-            <!-- There has to be a better way to fix the size than use minHeight and maxHeight... -->
-        <Button
-            android:text="@string/right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@id/upButton"
+        app:layout_constraintStart_toStartOf="parent"
+    />
 
-    <!-- A dirty trick to center the "down" button: make it the middle item of a LinearLayout.
-        Surely ConstraintLayout has a better way?
-    -->
-    <LinearLayout
-        android:id="@+id/downButtonPanel"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <!-- TODO?~ See if we can use relative layout_width and layout_height, instead of absolute values.
+      So far, that has lead to the layout being as large as the screen, whether we used match_parent or wrap_content.
+      There should be a way to tell Android what the content size is. (And scale it to screen size, while we're at it).
+      Check `onMeasure`.
+      -->
+    <com.cormontia.android.game2048.GameBoardView
+        android:id="@+id/gameBoardView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:layout_constraintTop_toBottomOf="@id/upButton"
+        app:layout_constraintStart_toEndOf="@id/leftButton"
+    />
+    <TextView
+        android:text="Test"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/middleRow">
-        <Button
-            android:text="@string/down"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/middleRow"
-            app:layout_constraintStart_toStartOf="parent"
-            android:gravity="center"
-        />
-    </LinearLayout>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/upButton"
+    />
+
+    <Button
+        android:id="@+id/rightButton"
+        android:text="@string/right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/upButton"
+        app:layout_constraintStart_toEndOf="@id/gameBoardView"
+    />
+
+    <!-- Bottom row: just the "Down" button. -->
+    <Button
+        android:id="@+id/downButton"
+        android:text="@string/down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/gameBoardView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+    />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

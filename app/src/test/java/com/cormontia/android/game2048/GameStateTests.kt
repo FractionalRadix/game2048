@@ -54,6 +54,7 @@ class GameStateTests {
 
     @Test
     fun testReverseRowOrColumn() {
+        // _,2,_,8 becomes 8,_,2,_
         val input = mutableMapOf<Int,Int>()
         input[2] = 2
         input[4] = 8
