@@ -2,11 +2,8 @@ package com.cormontia.android.game2048
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
-import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -17,6 +14,8 @@ import android.view.View
 class GameBoardView : View {
 
     private var gameBoard = mapOf<Coor,Int>()
+
+    private val blackPaint = Paint()
 
     constructor(context: Context) : super(context) {
         init(null, 0)
@@ -35,6 +34,11 @@ class GameBoardView : View {
     }
 
     private fun init(attrs: AttributeSet?, defStyle: Int) {
+
+        blackPaint.style = Paint.Style.STROKE
+        blackPaint.strokeWidth = 4f
+        blackPaint.textSize = 40f
+
     }
 
     fun updateGameState(gameState: Map<Coor,Int>) {
@@ -68,31 +72,22 @@ class GameBoardView : View {
 
         Log.i("2048-game", "width==$width, height==$height")
 
-        val blackPaint = Paint()
-        blackPaint.style = Paint.Style.STROKE
-        blackPaint.strokeWidth = 4f
-        blackPaint.textSize = 50f
-
-        //TODO!= A test rectangle to see how the x and y coordinates are working.
-        // It seems that the y coordinate is relative to the Constraint Layout, but the x coordinate is not?!?!?!
-        val redPaint = Paint()
-        redPaint.color = Color.RED
-        redPaint.style = Paint.Style.FILL_AND_STROKE
-        redPaint.strokeWidth = 4f
-        val rect = Rect(0,0,210,210)
-        canvas.drawRect(rect, redPaint)
-
+        // The width of our block is 400.
+        // So it should start at (contentWidth / 2) - 200. Well, plus padding.
+        // Analogous for the y offset.
+        val x0 = contentWidth / 2 - 200
+        val y0 = contentHeight / 2 - 200
         for (r in 1..4) {
             for (c in 1..4) {
-                val x = paddingLeft + 100 * (c-1)
-                val y = paddingTop + 100 * (r-1)
+                val x = paddingLeft + x0 + 100 * (c-1)
+                val y = paddingTop + y0 + 100 * (r-1)
                 val smallRect = Rect(x, y, x+90, y+90)
                 canvas.drawRect(smallRect, blackPaint)
 
                 val fieldValue = gameBoard[Coor(r,c)]
                 if (fieldValue != null) {
                     //TODO!~ Adjust these offsets...
-                    canvas.drawText(fieldValue.toString(), (x + 50).toFloat(), (y + 150).toFloat(), blackPaint)
+                    canvas.drawText(fieldValue.toString(), (x + 50).toFloat(), (y + 50).toFloat(), blackPaint)
                 }
             }
         }

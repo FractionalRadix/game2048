@@ -4,4 +4,10 @@
     <string name="left">Left</string>
     <string name="down">Down</string>
     <string name="right">Right</string>
+    <string name="new_game">New game</string>
+    <string name="load">Load</string>
+    <string name="save">Save</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="share">Share</string>
 </resources>
