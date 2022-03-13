@@ -145,6 +145,11 @@ class GameState : ViewModel() {
         }
     }
 
+    fun startNewGame() {
+        game.clear()
+        placeNewValue()
+    }
+
     //TODO?~ Use an Observable...?
     fun getGameState(): Map<Coor,Int> {
         return game
@@ -156,14 +161,7 @@ class GameState : ViewModel() {
      * If there is no empty spot, then do nothing.
      */
     fun placeNewValue() {
-        val emptySlots = mutableListOf<Coor>()
-        for (rowIdx in 1..4) {
-            for (colIdx in 1..4) {
-                if (!game.containsKey(Coor(rowIdx, colIdx))) {
-                    emptySlots.add(Coor(rowIdx, colIdx))
-                }
-            }
-        }
+        val emptySlots = findEmptyPositions()
 
         val nrOfEmptySlots = emptySlots.size
         if (nrOfEmptySlots > 0) {
@@ -172,6 +170,22 @@ class GameState : ViewModel() {
             val value = if (random.nextInt(2) == 1) 2 else 4
             game[selectedField] = value
         }
+    }
+
+    /**
+     * Find all empty positions on the game board.
+     * @return A list of all positions on the game board, that do not contain a value.
+     */
+    private fun findEmptyPositions(): List<Coor> {
+        val emptySlots = mutableListOf<Coor>()
+        for (rowIdx in 1..4) {
+            for (colIdx in 1..4) {
+                if (!game.containsKey(Coor(rowIdx, colIdx))) {
+                    emptySlots.add(Coor(rowIdx, colIdx))
+                }
+            }
+        }
+        return emptySlots.toList()
     }
 
     /**

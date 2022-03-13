@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
-            android:id="@+id/New"
+            android:id="@+id/newGameButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/new_game"

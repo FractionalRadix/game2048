@@ -13,7 +13,6 @@ class MainActivity : AppCompatActivity() {
     //TODO!~ Use a smaller font for the numbers. (Or maybe even custom graphics...?)
     //TODO!+ Add score.
     //TODO!+ Let player know (and possibly restart) if 2048 is reached.
-    //TODO!+ Implement "new game" button.
     //TODO!+ Implement Load, Save, and perhaps Share buttons?
     //TODO!+ Use Material Design icons for the buttons, instead of text.
 
@@ -33,10 +32,13 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.rightButton).setOnClickListener { right() }
         findViewById<Button>(R.id.upButton).setOnClickListener { up() }
         findViewById<Button>(R.id.downButton).setOnClickListener { down() }
+
+        findViewById<Button>(R.id.newGameButton).setOnClickListener{ newGame() }
     }
 
-    fun newGame(view: View) {
-        TODO()
+    private fun newGame() {
+        gameState.startNewGame()
+        gameBoardView.updateGameState(gameState.getGameState())
     }
 
     fun load(view: View) {
