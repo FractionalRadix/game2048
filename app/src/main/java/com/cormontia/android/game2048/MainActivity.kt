@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
     //TODO!+ Add score.
     //TODO!+ Let player know (and possibly restart) if 2048 is reached.
     //TODO!+ Implement Load, Save, and perhaps Share buttons?
-    //TODO!+ Use Material Design icons for the buttons, instead of text.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
