@@ -3,6 +3,7 @@ package com.cormontia.android.game2048
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 
@@ -28,12 +29,12 @@ class MainActivity : AppCompatActivity() {
         //TODO?~ Use View binding to instead of findViewById?
         // (Note that we dropped "android:onClick" in the XML because it's deprecated.
         //  In its method comment it said to use `findViewById`. Now we have to use something else AGAIN...)
-        findViewById<Button>(R.id.leftButton).setOnClickListener { left() }
-        findViewById<Button>(R.id.rightButton).setOnClickListener { right() }
-        findViewById<Button>(R.id.upButton).setOnClickListener { up() }
-        findViewById<Button>(R.id.downButton).setOnClickListener { down() }
+        findViewById<ImageButton>(R.id.leftButton).setOnClickListener { left() }
+        findViewById<ImageButton>(R.id.rightButton).setOnClickListener { right() }
+        findViewById<ImageButton>(R.id.upButton).setOnClickListener { up() }
+        findViewById<ImageButton>(R.id.downButton).setOnClickListener { down() }
 
-        findViewById<Button>(R.id.newGameButton).setOnClickListener{ newGame() }
+        findViewById<ImageButton>(R.id.newGameButton).setOnClickListener{ newGame() }
     }
 
     private fun newGame() {
