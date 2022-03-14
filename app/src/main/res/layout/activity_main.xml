@@ -7,15 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!-- TODO~ Use a ConstraintLayout Flow helper to make the chains?
+        I could at least use them for the Button bar.
+        -->
+    <!-- Removed:         style="?android:attr/buttonBarStyle" -->
     <LinearLayout
         android:id="@+id/buttonPanel"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        style="?android:attr/buttonBarStyle"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Removed: style="?android:attr/buttonBarStyle" -->
         <ImageButton
             android:id="@+id/newGameButton"
             android:src="@drawable/baseline_clear_24"
@@ -23,8 +27,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
         <ImageButton
             android:id="@+id/Load"
@@ -33,8 +35,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
         <ImageButton
             android:id="@+id/Save"
@@ -43,8 +43,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
         <ImageButton
             android:id="@+id/Undo"
@@ -53,8 +51,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
         <ImageButton
             android:id="@+id/Redo"
@@ -63,8 +59,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
         <ImageButton
             android:id="@+id/Share"
@@ -73,8 +67,6 @@
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-            style="?android:attr/buttonBarStyle"
         />
     </LinearLayout>
 
@@ -108,6 +100,7 @@
         android:layout_height="wrap_content"
 
         app:layout_constraintTop_toBottomOf="@id/upButton"
+        app:layout_constraintBottom_toTopOf="@id/downButton"
 
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/gameBoardView"
@@ -139,6 +132,7 @@
         android:layout_height="wrap_content"
 
         app:layout_constraintTop_toBottomOf="@id/upButton"
+        app:layout_constraintBottom_toTopOf="@id/downButton"
 
         app:layout_constraintStart_toEndOf="@id/gameBoardView"
         app:layout_constraintEnd_toEndOf="parent"
