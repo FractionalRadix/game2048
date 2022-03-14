@@ -13,7 +13,7 @@ import android.view.View
  */
 class GameBoardView : View {
 
-    private var gameBoard = mapOf<Coor,Int>()
+    private var gameBoard = GameState(HashMap())
 
     private val blackPaint = Paint()
 
@@ -41,7 +41,7 @@ class GameBoardView : View {
 
     }
 
-    fun updateGameState(gameState: Map<Coor,Int>) {
+    fun updateGameState(gameState: GameState) {
         this.gameBoard = gameState
         invalidate()    // Force repaint.
     }
@@ -84,7 +84,7 @@ class GameBoardView : View {
                 val smallRect = Rect(x, y, x+90, y+90)
                 canvas.drawRect(smallRect, blackPaint)
 
-                val fieldValue = gameBoard[Coor(r,c)]
+                val fieldValue = gameBoard.state[Coor(r,c)]
                 if (fieldValue != null) {
                     //TODO!~ Adjust these offsets...
                     canvas.drawText(fieldValue.toString(), (x + 50).toFloat(), (y + 50).toFloat(), blackPaint)

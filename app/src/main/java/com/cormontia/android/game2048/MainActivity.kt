@@ -2,13 +2,12 @@ package com.cormontia.android.game2048
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var gameState: GameState
+    private lateinit var gameViewModel: GameViewModel
     private lateinit var gameBoardView: GameBoardView
 
     //TODO!~ Use a smaller font for the numbers. (Or maybe even custom graphics...?)
@@ -20,10 +19,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        gameState = ViewModelProvider(this)[GameState::class.java]
-        gameState.init()
+        gameViewModel = ViewModelProvider(this)[GameViewModel::class.java]
+        gameViewModel.init()
         gameBoardView = findViewById(R.id.gameBoardView)
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameBoardView.updateGameState(gameViewModel.getGameState())
 
         //TODO?~ Use View binding to instead of findViewById?
         // (Note that we dropped "android:onClick" in the XML because it's deprecated.
@@ -37,8 +36,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun newGame() {
-        gameState.startNewGame()
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameViewModel.startNewGame()
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
     fun load(view: View) {
@@ -50,11 +49,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun undo(view: View) {
-        TODO()
+        gameViewModel.undo()
     }
 
     fun redo(view: View) {
-        TODO()
+        gameViewModel.redo()
     }
 
     fun share(view: View) {
@@ -62,35 +61,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun right() {
-        val gameStateChanged = gameState.right()
+        val gameStateChanged = gameViewModel.right()
         if (gameStateChanged) {
-            gameState.placeNewValue()
+            gameViewModel.placeNewValue()
         }
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
     private fun left() {
-        val gameStateChanged = gameState.left()
+        val gameStateChanged = gameViewModel.left()
         if (gameStateChanged) {
-            gameState.placeNewValue()
+            gameViewModel.placeNewValue()
         }
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameBoardView.updateGameState(gameViewModel.getGameState())
 
     }
 
     private fun up() {
-        val gameStateChanged = gameState.up()
+        val gameStateChanged = gameViewModel.up()
         if (gameStateChanged) {
-            gameState.placeNewValue()
+            gameViewModel.placeNewValue()
         }
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
     private fun down(){
-        val gameStateChanged = gameState.down()
+        val gameStateChanged = gameViewModel.down()
         if (gameStateChanged) {
-            gameState.placeNewValue()
+            gameViewModel.placeNewValue()
         }
-        gameBoardView.updateGameState(gameState.getGameState())
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 }

@@ -1,14 +1,20 @@
 package com.cormontia.android.game2048
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import java.util.*
 import kotlin.collections.HashMap
 
 data class Coor(val row: Int, val col:Int)
 
-class GameState : ViewModel() {
-    private val game = HashMap<Coor,Int>()
+data class GameState(val state: MutableMap<Coor, Int>)
+
+class GameViewModel : ViewModel() {
+    private var currentGameState = GameState(HashMap())
     private val random = Random()
+
+    private var history = mutableListOf<GameState>()
+    private var historyIndex = 0
 
     /**
      * Check if the game has only just started, or if `init` is called due to an orientation change.
@@ -57,7 +63,6 @@ class GameState : ViewModel() {
 
             return shiftedRow
         }
-
 
         /**
          * Transform a row or column according to the rules of 2048.
@@ -142,17 +147,24 @@ class GameState : ViewModel() {
         if (startOfGame) {
             placeNewValue()
             startOfGame = false
+
+            historyIndex = 0
+            history.clear()
         }
     }
 
     fun startNewGame() {
-        game.clear()
+        currentGameState.state.clear()
+        currentGameState = GameState(HashMap())
         placeNewValue()
+
+        historyIndex = 0
+        history.clear()
     }
 
     //TODO?~ Use an Observable...?
-    fun getGameState(): Map<Coor,Int> {
-        return game
+    fun getGameState(): GameState {
+        return currentGameState
     }
 
     /**
@@ -165,10 +177,11 @@ class GameState : ViewModel() {
 
         val nrOfEmptySlots = emptySlots.size
         if (nrOfEmptySlots > 0) {
+            history.add(currentGameState)
             val randomIndex = random.nextInt(nrOfEmptySlots)
             val selectedField = emptySlots[randomIndex]
             val value = if (random.nextInt(2) == 1) 2 else 4
-            game[selectedField] = value
+            currentGameState.state[selectedField] = value
         }
     }
 
@@ -180,7 +193,7 @@ class GameState : ViewModel() {
         val emptySlots = mutableListOf<Coor>()
         for (rowIdx in 1..4) {
             for (colIdx in 1..4) {
-                if (!game.containsKey(Coor(rowIdx, colIdx))) {
+                if (!currentGameState.state.containsKey(Coor(rowIdx, colIdx))) {
                     emptySlots.add(Coor(rowIdx, colIdx))
                 }
             }
@@ -194,21 +207,20 @@ class GameState : ViewModel() {
      */
     fun right(): Boolean {
         var changeOccurred = false
+        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+
         for (rowIdx in 1..4) {
-            val row = game
-                .filterKeys { it.row == rowIdx }
-                .map { Pair(it.key.col, it.value) }
-                .toMap()
+            val row = getRow(rowIdx)
             val shiftedRow = shiftAndCollapse(row)
             if (!equal(row, shiftedRow)) {
                 changeOccurred = true
             }
 
             // Remove the old row.
-            game.keys.removeIf { it.row == rowIdx }
+            currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row.
             for (elt in shiftedRow) {
-                game[Coor(rowIdx, elt.key)] = elt.value
+                currentGameState.state[Coor(rowIdx, elt.key)] = elt.value
             }
         }
 
@@ -221,11 +233,10 @@ class GameState : ViewModel() {
      */
     fun left(): Boolean {
         var changeOccurred = false
+        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+
         for (rowIdx in 1..4) {
-            val row = game
-                .filterKeys { it.row == rowIdx }
-                .map { Pair(it.key.col, it.value) }
-                .toMap()
+            val row = getRow(rowIdx)
 
             val shiftedRow = shiftAndCollapse(reverseRowOrColumn(row))
             if (!equal(reverseRowOrColumn(row), shiftedRow)) {
@@ -233,11 +244,15 @@ class GameState : ViewModel() {
             }
 
             // Remove the old row.
-            game.keys.removeIf { it.row == rowIdx }
+            currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row, but in reverse order.
             for (elt in shiftedRow) {
-                game[Coor(rowIdx, 5 - elt.key)] = elt.value
+                currentGameState.state[Coor(rowIdx, 5 - elt.key)] = elt.value
             }
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
         }
 
         return changeOccurred
@@ -249,11 +264,10 @@ class GameState : ViewModel() {
      */
     fun up(): Boolean {
         var changeOccurred = false
+        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+
         for (colIdx in 1..4) {
-            val col = game
-                .filterKeys { it.col == colIdx }
-                .map { Pair(it.key.row, it.value) }
-                .toMap()
+            val col = getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(reverseRowOrColumn(col))
 
             if (!equal(reverseRowOrColumn(col), shiftedCol)) {
@@ -261,12 +275,17 @@ class GameState : ViewModel() {
             }
 
             // Remove the old column.
-            game.keys.removeIf { it.col == colIdx }
+            currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column, but in reverse order.
             for (elt in shiftedCol) {
-                game[Coor(5 - elt.key, colIdx)] = elt.value
+                currentGameState.state[Coor(5 - elt.key, colIdx)] = elt.value
             }
         }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
+        }
+
         return changeOccurred
     }
 
@@ -276,11 +295,10 @@ class GameState : ViewModel() {
      */
     fun down(): Boolean {
         var changeOccurred = false
+        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+
         for (colIdx in 1..4) {
-            val col = game
-                .filterKeys { it.col == colIdx }
-                .map { Pair(it.key.row, it.value) }
-                .toMap()
+            val col = getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(col)
 
             if (!equal(col, shiftedCol)) {
@@ -288,13 +306,61 @@ class GameState : ViewModel() {
             }
 
             // Remove the old column.
-            game.keys.removeIf { it.col == colIdx }
+            currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column.
             for (elt in shiftedCol) {
-                game[Coor(elt.key, colIdx)] = elt.value
+                currentGameState.state[Coor(elt.key, colIdx)] = elt.value
             }
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
         }
 
         return changeOccurred
     }
+
+    fun undo() {
+        TODO()
+    }
+
+    fun redo() {
+        TODO()
+    }
+
+    /**
+     * Update the history list after the player makes a new move.
+     */
+    private fun updateHistory(gameState: GameState) {
+        // Update the history list.
+        if (historyIndex < history.size) {
+            history = history.take(historyIndex).toMutableList()
+        }
+        history.add(gameState);  //TODO!+ Make sure it adds a deep copy....
+
+        Log.i("2048-game", "History file: ${historyIndex}/${history.size}")
+        Log.i("2048-game", "...last element: $gameState")
+    }
+
+    /**
+     * Given a row index, return a mapping from its row numbers to its contents.
+     * For example, if the 2nd row reads "_,8,16,_", then `getRow(2)` will return the map { 2 -> 8, 3 -> 16 }.
+     * @param Index of the row (1-based).
+     * @return The contents of the row, as a mapping from field indices to field contents.
+     */
+    private fun getRow(rowIdx: Int) = currentGameState.state
+        .filterKeys { it.row == rowIdx }
+        .map { Pair(it.key.col, it.value) }
+        .toMap()
+
+    /**
+     * Given a column index, return a mapping from its row numbers to its contents.
+     * For example, if the 3th column reads "2,4,_,2", then `getColumn(3)` will return the map { 1 -> 2, 2 -> 4, 4 -> 2 }.
+     * @param Index of the column (1-based).
+     * @return The contents of the column, as a mapping from field indices to field contents.
+     */
+    private fun getColumn(colIdx: Int) = currentGameState.state
+        .filterKeys { it.col == colIdx }
+        .map { Pair(it.key.row, it.value) }
+        .toMap()
 }
