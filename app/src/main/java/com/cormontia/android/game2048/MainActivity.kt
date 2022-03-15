@@ -1,7 +1,6 @@
 package com.cormontia.android.game2048
 
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -55,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
-    fun redo() {
+    private fun redo() {
         gameViewModel.redo()
         gameBoardView.updateGameState(gameViewModel.getGameState())
     }
@@ -65,32 +64,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun right() {
-        val gameStateChanged = gameViewModel.right()
-        if (gameStateChanged) {
-            gameViewModel.placeNewValue()
-        }
-        gameBoardView.updateGameState(gameViewModel.getGameState())
+        move(fun() = gameViewModel.right() )
     }
 
     private fun left() {
-        val gameStateChanged = gameViewModel.left()
-        if (gameStateChanged) {
-            gameViewModel.placeNewValue()
-        }
-        gameBoardView.updateGameState(gameViewModel.getGameState())
-
+        move(fun() = gameViewModel.left() )
     }
 
     private fun up() {
-        val gameStateChanged = gameViewModel.up()
-        if (gameStateChanged) {
-            gameViewModel.placeNewValue()
-        }
-        gameBoardView.updateGameState(gameViewModel.getGameState())
+        move(fun() = gameViewModel.up() )
     }
 
-    private fun down(){
-        val gameStateChanged = gameViewModel.down()
+    private fun down() {
+        move(fun() = gameViewModel.down() )
+    }
+
+    private fun move(moveInModel: () -> Boolean) {
+        val gameStateChanged = moveInModel()
         if (gameStateChanged) {
             gameViewModel.placeNewValue()
         }
