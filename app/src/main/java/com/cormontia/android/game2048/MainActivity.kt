@@ -33,6 +33,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.downButton).setOnClickListener { down() }
 
         findViewById<ImageButton>(R.id.newGameButton).setOnClickListener{ newGame() }
+        findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
+        findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
     }
 
     private fun newGame() {
@@ -40,23 +42,25 @@ class MainActivity : AppCompatActivity() {
         gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
-    fun load(view: View) {
+    fun load() {
         TODO()
     }
 
-    fun save(view: View) {
+    fun save() {
         TODO()
     }
 
-    fun undo(view: View) {
+    private fun undo() {
         gameViewModel.undo()
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
-    fun redo(view: View) {
+    fun redo() {
         gameViewModel.redo()
+        gameBoardView.updateGameState(gameViewModel.getGameState())
     }
 
-    fun share(view: View) {
+    fun share() {
         TODO()
     }
 

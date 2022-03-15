@@ -7,7 +7,17 @@ import kotlin.collections.HashMap
 
 data class Coor(val row: Int, val col:Int)
 
-data class GameState(val state: MutableMap<Coor, Int>)
+data class GameState(val state: MutableMap<Coor, Int>) {
+    fun deepCopy(): GameState {
+        val result = mutableMapOf<Coor, Int>()
+        state.forEach { result[it.key] = it.value }
+        return GameState(result)
+    }
+}
+
+//TODO!~ We need TWO game-states here.
+// The present game state, and the game state that is being built from the player's move.
+// That saves a lot of deep-copying.
 
 class GameViewModel : ViewModel() {
     private var currentGameState = GameState(HashMap())
@@ -207,7 +217,7 @@ class GameViewModel : ViewModel() {
      */
     fun right(): Boolean {
         var changeOccurred = false
-        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+        val cachedGameState = currentGameState.deepCopy()
 
         for (rowIdx in 1..4) {
             val row = getRow(rowIdx)
@@ -224,6 +234,10 @@ class GameViewModel : ViewModel() {
             }
         }
 
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
+        }
+
         return changeOccurred
     }
 
@@ -233,7 +247,7 @@ class GameViewModel : ViewModel() {
      */
     fun left(): Boolean {
         var changeOccurred = false
-        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+        val cachedGameState = currentGameState.deepCopy()
 
         for (rowIdx in 1..4) {
             val row = getRow(rowIdx)
@@ -264,7 +278,7 @@ class GameViewModel : ViewModel() {
      */
     fun up(): Boolean {
         var changeOccurred = false
-        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+        val cachedGameState = currentGameState.deepCopy()
 
         for (colIdx in 1..4) {
             val col = getColumn(colIdx)
@@ -295,7 +309,7 @@ class GameViewModel : ViewModel() {
      */
     fun down(): Boolean {
         var changeOccurred = false
-        val cachedGameState = currentGameState  //TODO!~ Check if this is a deep copy.
+        val cachedGameState = currentGameState.deepCopy()
 
         for (colIdx in 1..4) {
             val col = getColumn(colIdx)
@@ -321,11 +335,21 @@ class GameViewModel : ViewModel() {
     }
 
     fun undo() {
-        TODO()
+        Log.i("2048-game", "Entered GameViewModel.undo()")
+        if (historyIndex > 0) {
+            Log.i("2048-game", "Decreasing historyIndex from $historyIndex")
+            historyIndex--
+            this.currentGameState = history[historyIndex].deepCopy()
+        }
     }
 
     fun redo() {
-        TODO()
+        Log.i("2048-game", "Entered GameViewModel.redo()")
+        if (historyIndex < history.size) {
+            Log.i("2048-game", "Restoring game state, historyIndex=$historyIndex")
+            this.currentGameState = history[historyIndex].deepCopy()
+            historyIndex++
+        }
     }
 
     /**
@@ -336,7 +360,8 @@ class GameViewModel : ViewModel() {
         if (historyIndex < history.size) {
             history = history.take(historyIndex).toMutableList()
         }
-        history.add(gameState);  //TODO!+ Make sure it adds a deep copy....
+        history.add(gameState) // We don't need to deepCopy(), it already IS a deepCopy().
+        historyIndex++
 
         Log.i("2048-game", "History file: ${historyIndex}/${history.size}")
         Log.i("2048-game", "...last element: $gameState")
@@ -345,7 +370,7 @@ class GameViewModel : ViewModel() {
     /**
      * Given a row index, return a mapping from its row numbers to its contents.
      * For example, if the 2nd row reads "_,8,16,_", then `getRow(2)` will return the map { 2 -> 8, 3 -> 16 }.
-     * @param Index of the row (1-based).
+     * @param rowIdx of the row (1-based).
      * @return The contents of the row, as a mapping from field indices to field contents.
      */
     private fun getRow(rowIdx: Int) = currentGameState.state
@@ -356,7 +381,7 @@ class GameViewModel : ViewModel() {
     /**
      * Given a column index, return a mapping from its row numbers to its contents.
      * For example, if the 3th column reads "2,4,_,2", then `getColumn(3)` will return the map { 1 -> 2, 2 -> 4, 4 -> 2 }.
-     * @param Index of the column (1-based).
+     * @param colIdx of the column (1-based).
      * @return The contents of the column, as a mapping from field indices to field contents.
      */
     private fun getColumn(colIdx: Int) = currentGameState.state
