@@ -6,7 +6,11 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
+import androidx.core.view.GestureDetectorCompat
+import kotlin.math.abs
 
 /**
  * View to display a 2048 board.
@@ -18,11 +22,11 @@ class GameBoardView : View {
     private val blackPaint = Paint()
 
     constructor(context: Context) : super(context) {
-        init(null, 0)
+        init(context, null, 0)
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init(attrs, 0)
+        init(context,attrs, 0)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(
@@ -30,15 +34,13 @@ class GameBoardView : View {
         attrs,
         defStyle
     ) {
-        init(attrs, defStyle)
+        init(context, attrs, defStyle)
     }
 
-    private fun init(attrs: AttributeSet?, defStyle: Int) {
-
+    private fun init(context: Context, attrs: AttributeSet?, defStyle: Int) {
         blackPaint.style = Paint.Style.STROKE
         blackPaint.strokeWidth = 4f
         blackPaint.textSize = 40f
-
     }
 
     fun updateGameState(gameState: GameState) {
