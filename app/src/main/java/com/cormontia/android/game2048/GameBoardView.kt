@@ -48,30 +48,19 @@ class GameBoardView : View {
         blackPaint.strokeWidth = 4f
         blackPaint.textSize = 40f
 
-        run {
-            val backgroundPaint = Paint()
-            backgroundPaint.color = rgb(255, 255, 0)
-            backgroundPaints[2] = backgroundPaint
-        }
+        val backgroundColors = mapOf(
+            2 to rgb(255, 255, 0),
+            4 to rgb(255, 192, 0),
+            8 to rgb(255, 128, 0),
+            16 to rgb(255, 64, 0)
+        )
 
-        run {
-            val backgroundPaint = Paint()
-            backgroundPaint.color = rgb(255, 192, 0)
-            backgroundPaints[4] = backgroundPaint
+        //TODO?~ See if this can be done using a ".map" or ".foreach" ?
+        for (pair in backgroundColors) {
+            val paint = Paint()
+            paint.color = pair.value
+            backgroundPaints[pair.key] = paint
         }
-
-        run {
-            val backgroundPaint = Paint()
-            backgroundPaint.color = rgb(255, 128, 0)
-            backgroundPaints[8] = backgroundPaint
-        }
-
-        run {
-            val backgroundPaint = Paint()
-            backgroundPaint.color = rgb(255, 64, 0)
-            backgroundPaints[16] = backgroundPaint
-        }
-
     }
 
     fun updateGameState(gameState: GameState) {
