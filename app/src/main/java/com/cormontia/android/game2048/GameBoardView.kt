@@ -19,13 +19,13 @@ import kotlin.math.abs
  */
 class GameBoardView : View {
 
-    private var gameBoard = GameState(HashMap())
+    private var gameBoard = GameState(HashMap(), 0)
 
     // Paint for the text
     private val blackPaint = Paint()
 
     // Paints for the different background colors:
-    val backgroundPaints : MutableMap<Int, Paint> = mutableMapOf()
+    var backgroundPaints : Map<Int, Paint> = mutableMapOf()
 
     constructor(context: Context) : super(context) {
         init(context, null, 0)
@@ -46,7 +46,7 @@ class GameBoardView : View {
     private fun init(context: Context, attrs: AttributeSet?, defStyle: Int) {
         blackPaint.style = Paint.Style.STROKE
         blackPaint.strokeWidth = 4f
-        blackPaint.textSize = 40f
+        blackPaint.textSize = 30f
 
         val backgroundColors = mapOf(
             2 to rgb(255, 255, 0),
@@ -55,12 +55,15 @@ class GameBoardView : View {
             16 to rgb(255, 64, 0)
         )
 
-        //TODO?~ See if this can be done using a ".map" or ".foreach" ?
-        for (pair in backgroundColors) {
-            val paint = Paint()
-            paint.color = pair.value
-            backgroundPaints[pair.key] = paint
-        }
+        backgroundPaints = backgroundColors
+            .map { (key, color) -> key to makePaintWithColor(color) }
+            .toMap()
+    }
+
+    private fun makePaintWithColor(color: Int) : Paint {
+        val paint = Paint()
+        paint.color = color
+        return paint
     }
 
     fun updateGameState(gameState: GameState) {

@@ -12,7 +12,7 @@ data class Coor(val row: Int, val col:Int)
 // That saves a lot of deep-copying.
 
 class GameViewModel : ViewModel() {
-    private var currentGameState = GameState(HashMap())
+    private var currentGameState = GameState(HashMap(),0)
     private val random = Random()
 
     private var history = mutableListOf<GameState>()
@@ -78,29 +78,37 @@ class GameViewModel : ViewModel() {
          * A similar thing applies to using this method for columns.
          *
          * @param row A mapping of row- or column indexes to field contents.
-         * @return A new row, where all elements are shifted as far to the highest position as possible, with adjacent equal fields collapsed int one.
+         * @return A pair of elements.
+         * The first is a new row, where all elements are shifted as far to the highest position as possible, with adjacent equal fields collapsed int one.
+         * The second is the "score", the value of all elements that were merged, summed together.
          */
-        fun shiftAndCollapse(row: Map<Int, Int>): Map<Int, Int> {
+        fun shiftAndCollapse(row: Map<Int, Int>): Pair<Map<Int, Int>, Int> {
 
+            var score = 0
+
+            // First, shift all the elements as far to the end as you can.
             var shiftedRow = shift(row)
 
             // Second, if two adjacent fields have the same value, collapse them into one.
             if (shiftedRow[4] != null && shiftedRow[4] == shiftedRow[3]) {
                 shiftedRow[4] = shiftedRow[4]!! + shiftedRow[3]!!
                 shiftedRow.remove(3)
+                score += shiftedRow[4]!!
             }
             if (shiftedRow[3] != null && shiftedRow[3] == shiftedRow[2]) {
                 shiftedRow[3] = shiftedRow[3]!! + shiftedRow[2]!!
                 shiftedRow.remove(2)
+                score += shiftedRow[3]!!
             }
             if (shiftedRow[2] != null && shiftedRow[2] == shiftedRow[1]) {
                 shiftedRow[2] = shiftedRow[2]!! + shiftedRow[1]!!
                 shiftedRow.remove(1)
+                score += shiftedRow[2]!!
             }
 
             shiftedRow = shift(shiftedRow)
 
-            return shiftedRow
+            return Pair(shiftedRow, score)
         }
 
         /**
@@ -116,7 +124,7 @@ class GameViewModel : ViewModel() {
         }
 
         /**
-         * Determine of two mappings from Int to Int, contain precisely the same mappings.
+         * Determine if two mappings from Int to Int, contain precisely the same mappings.
          * @param map1 A map from Int to Int.
          * @param map2 A map from Int to Int.
          * @return <code>true<code> if and only if map1 contains exactly the same mappings as map2.
@@ -157,7 +165,7 @@ class GameViewModel : ViewModel() {
 
     fun startNewGame() {
         currentGameState.state.clear()
-        currentGameState = GameState(HashMap())
+        currentGameState = GameState(HashMap(), 0)
         placeNewValue()
 
         historyIndex = 0
@@ -214,14 +222,15 @@ class GameViewModel : ViewModel() {
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
             val shiftedRow = shiftAndCollapse(row)
-            if (!equal(row, shiftedRow)) {
+            if (!equal(row, shiftedRow.first)) {
                 changeOccurred = true
             }
+            currentGameState.score += shiftedRow.second
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row.
-            for (elt in shiftedRow) {
+            for (elt in shiftedRow.first) {
                 currentGameState.state[Coor(rowIdx, elt.key)] = elt.value
             }
         }
@@ -245,14 +254,15 @@ class GameViewModel : ViewModel() {
             val row = currentGameState.getRow(rowIdx)
 
             val shiftedRow = shiftAndCollapse(reverseRowOrColumn(row))
-            if (!equal(reverseRowOrColumn(row), shiftedRow)) {
+            if (!equal(reverseRowOrColumn(row), shiftedRow.first)) {
                 changeOccurred = true
             }
+            currentGameState.score += shiftedRow.second
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row, but in reverse order.
-            for (elt in shiftedRow) {
+            for (elt in shiftedRow.first) {
                 currentGameState.state[Coor(rowIdx, 5 - elt.key)] = elt.value
             }
         }
@@ -276,14 +286,15 @@ class GameViewModel : ViewModel() {
             val col = currentGameState.getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(reverseRowOrColumn(col))
 
-            if (!equal(reverseRowOrColumn(col), shiftedCol)) {
+            if (!equal(reverseRowOrColumn(col), shiftedCol.first)) {
                 changeOccurred = true
             }
+            currentGameState.score += shiftedCol.second
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column, but in reverse order.
-            for (elt in shiftedCol) {
+            for (elt in shiftedCol.first) {
                 currentGameState.state[Coor(5 - elt.key, colIdx)] = elt.value
             }
         }
@@ -307,14 +318,15 @@ class GameViewModel : ViewModel() {
             val col = currentGameState.getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(col)
 
-            if (!equal(col, shiftedCol)) {
+            if (!equal(col, shiftedCol.first)) {
                 changeOccurred = true
             }
+            currentGameState.score += shiftedCol.second
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column.
-            for (elt in shiftedCol) {
+            for (elt in shiftedCol.first) {
                 currentGameState.state[Coor(elt.key, colIdx)] = elt.value
             }
         }

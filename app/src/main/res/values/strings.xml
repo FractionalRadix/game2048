@@ -10,4 +10,5 @@
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="share">Share</string>
+    <string name="score">Score:</string>
 </resources>

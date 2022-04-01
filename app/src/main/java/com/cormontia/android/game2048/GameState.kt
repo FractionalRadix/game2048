@@ -1,6 +1,6 @@
 package com.cormontia.android.game2048
 
-data class GameState(val state: MutableMap<Coor, Int>) {
+data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     /**
      * Make a deep copy of the current game state.
      * @return A new GameState, that is a copy of this one, but does not share state with this one.
@@ -8,7 +8,7 @@ data class GameState(val state: MutableMap<Coor, Int>) {
     fun deepCopy(): GameState {
         val result = mutableMapOf<Coor, Int>()
         state.forEach { result[it.key] = it.value }
-        return GameState(result)
+        return GameState(result, score)
     }
 
     /**

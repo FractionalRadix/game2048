@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +17,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mGestureDetector: GestureDetectorCompat
 
     //TODO!~ Use a smaller font for the numbers. (Or maybe even custom graphics...?)
-    //TODO!+ Add score.
     //TODO!+ Let player know (and possibly restart) if 2048 is reached.
     //TODO!+ Implement Load, Save, and perhaps Share buttons?
 
@@ -42,11 +42,17 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.newGameButton).setOnClickListener{ newGame() }
         findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
+
+        val scoreText = resources.getString(R.string.score)
+        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
     }
 
     private fun newGame() {
         gameViewModel.startNewGame()
         gameBoardView.updateGameState(gameViewModel.getGameState())
+
+        val scoreText = resources.getString(R.string.score)
+        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
     }
 
     fun load() {
@@ -149,6 +155,9 @@ class MainActivity : AppCompatActivity() {
             gameViewModel.placeNewValue()
         }
         gameBoardView.updateGameState(gameViewModel.getGameState())
+
+        val scoreText = resources.getString(R.string.score)
+        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
     }
 
 }
