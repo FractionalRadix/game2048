@@ -11,6 +11,43 @@ data class Coor(val row: Int, val col:Int)
 // The present game state, and the game state that is being built from the player's move.
 // That saves a lot of deep-copying.
 
+interface FieldList {
+    operator fun set(index: Int, value: Int?)
+    operator fun get(index: Int): Int?
+}
+
+class RowFieldList(private val gameState: GameState, private val rowIdx: Int) : FieldList {
+    override fun set(index: Int, value: Int?) {
+        val idx = Coor(rowIdx, index)
+        if (value == null) {
+            gameState.state.remove(idx)
+        } else {
+            gameState.state[idx] = value
+        }
+    }
+
+    override fun get(index: Int): Int? {
+        return gameState.state[Coor(rowIdx, index)]
+    }
+}
+
+class ReverseRowFieldList(private val gameState: GameState, private val rowIdx: Int) : FieldList {
+    override fun set(index: Int, value: Int?) {
+        val idx = Coor(rowIdx, 5 - index)
+        if (value == null) {
+            gameState.state.remove(idx)
+        } else {
+            gameState.state[idx] = value
+        }
+    }
+
+    override fun get(index: Int): Int? {
+        return gameState.state[Coor(rowIdx, 5 - index)]
+    }
+}
+
+//TODO!+ If the "FieldList" abstraction works, then also implement FieldList for Column and Reverse Column.
+
 class GameViewModel : ViewModel() {
     private var currentGameState = GameState(HashMap(),0)
     private val random = Random()
@@ -64,6 +101,34 @@ class GameViewModel : ViewModel() {
             }
 
             return shiftedRow
+        }
+
+        //TODO?~ Do I really want the new "shiftAndCollapse" to shift-and-collapse IN-PLACE?
+        fun shiftAndCollapse(list: FieldList): FieldList {
+            //TODO!+
+            // Find the "rightmost" empty field.
+            // Move its predecessor into that.
+            // Keep doing this.
+
+            //TODO!~ Let's move it "leftwards", starting at 1, then adding up.
+            // The following works but only shifts the list by ONE!
+            for (i in 1..3) {
+                if (list[i] == null) {
+                    list[i] = list[i + 1]
+                    list[i + 1] = null
+                } else if (list[i] == list[i + 1]) {
+                    list[i] = 2 * list[i]!!
+                    list[i + 1] = null
+                }
+
+                //TODO!+ To make this effective, you should now check how many empty fields there are.
+                // And shift by THAT length ("i + gapSize") instead of 1 ("i + 1")
+                //   TEST: 8,_,_,_,16 should become 8,16
+                // gapSize should be 3.
+
+            }
+
+            return list
         }
 
         /**
@@ -221,6 +286,33 @@ class GameViewModel : ViewModel() {
             }
         }
         return emptySlots.toList()
+    }
+
+    /**
+     * Determine if there are still moves that the user can make.
+     * @return <code>true</code> if and only if the user can still make a legal move.
+     */
+    private fun movesAvailable(): Boolean {
+        // 1. If there is at least 1 open field, then the user can make a move.
+        if (!findEmptyPositions().isEmpty())
+            return true
+        // 2. If there are at least 2 fields with the same value adjacent to each other, then the user can make a move.
+        for (rowIdx in 1..4) {
+            for (colIdx in 1..3) {
+                if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx, colIdx + 1)])
+                    return true
+            }
+        }
+
+        for (colIdx in 1..4) {
+            for (rowIdx in 1..3) {
+                if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx + 1, colIdx)])
+                    return true
+            }
+        }
+
+        // 3. If neither of these conditions hold, then the playe rhas no more moves available.
+        return false
     }
 
     /**
