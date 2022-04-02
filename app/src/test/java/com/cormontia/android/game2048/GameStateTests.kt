@@ -7,6 +7,8 @@ class GameStateTests {
 
     //TODO?~ Replace with a REAL mock? Use Mockito?
     class MockFieldList(private var v1: Int?, private var v2: Int?, private var v3: Int?, private var v4: Int?): FieldList {
+        override val length: Int = 4
+
         override fun get(index: Int): Int? {
             return when (index) {
                 1 -> v1
@@ -25,6 +27,37 @@ class GameStateTests {
             }
         }
     }
+
+    //TODO?~ When we look at the FieldList interface this way, we might as well throw the thing away, and just use a MutableList<Int?> instead.....
+    class MockFieldList2(private var list: MutableList<Int?>): FieldList {
+        override val length = list.size
+        override fun get(index: Int): Int? {
+            return list[index - 1]
+        }
+        override fun set(index: Int, value: Int?) {
+            list[index - 1] = value
+        }
+    }
+
+    @Test
+    fun testDetermineGaps1() {
+        val input = MockFieldList2(mutableListOf(null,null,null,4,8,null,8))
+        val actual = GameViewModel.determineGaps(input)
+        assert(actual.size == 2)
+        assertEquals(actual[0], IntRange(1,3))
+        assertEquals(actual[1], IntRange(6,6))
+    }
+
+    @Test
+    fun testDetermineGaps2() {
+        val input = MockFieldList2(mutableListOf(8,null,null,4,8,null,8,null))
+        val actual = GameViewModel.determineGaps(input)
+        assert(actual.size == 3)
+        assertEquals(actual[0], IntRange(2,3))
+        assertEquals(actual[1], IntRange(6,6))
+        assertEquals(actual[2], IntRange(8,8))
+    }
+
 
     @Test
     fun testShiftAndCollapse_shiftWithoutDoubling() {

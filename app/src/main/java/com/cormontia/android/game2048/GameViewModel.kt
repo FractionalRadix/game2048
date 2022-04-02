@@ -10,43 +10,7 @@ data class Coor(val row: Int, val col:Int)
 //TODO!~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
 // That saves a lot of deep-copying.
-
-interface FieldList {
-    operator fun set(index: Int, value: Int?)
-    operator fun get(index: Int): Int?
-}
-
-class RowFieldList(private val gameState: GameState, private val rowIdx: Int) : FieldList {
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(rowIdx, index)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(rowIdx, index)]
-    }
-}
-
-class ReverseRowFieldList(private val gameState: GameState, private val rowIdx: Int) : FieldList {
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(rowIdx, 5 - index)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(rowIdx, 5 - index)]
-    }
-}
-
-//TODO!+ If the "FieldList" abstraction works, then also implement FieldList for Column and Reverse Column.
+// Also: note that if we switch to using "FieldList", a lot of the changes will be in-place.
 
 class GameViewModel : ViewModel() {
     private var currentGameState = GameState(HashMap(),0)
@@ -104,15 +68,10 @@ class GameViewModel : ViewModel() {
         }
 
         //TODO?~ Do I really want the new "shiftAndCollapse" to shift-and-collapse IN-PLACE?
-        fun shiftAndCollapse(list: FieldList): FieldList {
-            //TODO!+
-            // Find the "rightmost" empty field.
-            // Move its predecessor into that.
-            // Keep doing this.
-
-            //TODO!~ Let's move it "leftwards", starting at 1, then adding up.
+        //NOTE: this one works SOMEWHAT, it doesn't handle gaps.
+        fun OLD_shiftAndCollapse(list: FieldList): FieldList {
             // The following works but only shifts the list by ONE!
-            for (i in 1..3) {
+            for (i in 1 until list.length) {
                 if (list[i] == null) {
                     list[i] = list[i + 1]
                     list[i + 1] = null
@@ -127,6 +86,70 @@ class GameViewModel : ViewModel() {
                 // gapSize should be 3.
 
             }
+
+            return list
+        }
+
+        /**
+         * Find the index of the first empty cell in the list, starting from (including) `start`.
+         * For example, if the (1-based) list is [2,_,2,_,_,8] then firstEmptyCell(3) will return 4, and firstEmptyCell(5) will return 5.
+         * @return The index of the first empty cell from `start`, or the length of the list if there is no such cell.
+         */
+        fun firstEmptyCellFrom(list: FieldList, start: Int): Int {
+            val firstEmpty: Int
+            var idx = start
+            while (idx <= list.length && list[idx] != null)
+                idx++
+            return idx
+        }
+
+        /**
+         * Find the index of first non-empty cell in the list, starting from (including) `start`.
+         * For example, if the (1-based) list is [2,_,8,4,_,8] then firstNonEmptyCell(1) will return 1, firstNonEmptyCell(4) will return 4.
+         */
+        fun firstNonEmptyCellFrom(list: FieldList, start: Int): Int {
+            var idx = start
+            while (idx <= list.length && list[idx] == null) {
+                idx++
+            }
+            return idx
+        }
+
+        /**
+         * Given a FieldList, determine the ranges of empty cells in them.
+         * For example, the 1-based list [_,_,_,4,4,_] will yield [(1,3),(6,6)]
+         * @param list A FieldList that may contain empty fields, i.e. fields that are <code>null</code>.
+         * @return A list of IntRanges, where each IntRange corresponds to a series of 1 or more consecutive empty cells.
+         */
+        fun determineGaps(list: FieldList): List<IntRange> {
+            val gaps = mutableListOf<IntRange>()
+
+            var nextIdx = 1
+            do {
+                val startOfGap = firstEmptyCellFrom(list, nextIdx)
+                if (startOfGap <= list.length) {
+                    val endOfGap = firstNonEmptyCellFrom(list, startOfGap) - 1
+                    gaps.add(IntRange(startOfGap, endOfGap))
+                    nextIdx = endOfGap + 2 // endOfGap + 1 is the non-empty cell, so the first candidate for the next EMPTY  cell is endOfGap + 2
+                }
+
+            } while (startOfGap <= list.length && nextIdx <= list.length)
+
+            return gaps
+        }
+
+        fun shiftAndCollapse(list: FieldList): FieldList {
+            val gaps = determineGaps(list)
+
+            //TODO!+ Now that you know the gaps, shift over them.
+            // And keep in mind to merge blocks if they have the same value.
+            // Well, let's first just empty the gaps.
+
+            // Suppose we have [2,_,_,4].
+            // This is a single gap, (2,3).
+            // So, everything after 3 must be shifted by the size of this gap.
+
+            TODO()
 
             return list
         }
@@ -267,7 +290,7 @@ class GameViewModel : ViewModel() {
             history.add(currentGameState)
             val randomIndex = random.nextInt(nrOfEmptySlots)
             val selectedField = emptySlots[randomIndex]
-            val value = if (random.nextInt(2) == 1) 2 else 4
+            val value = if (random.nextInt(10) == 1) 4 else 2
             currentGameState.state[selectedField] = value
         }
     }
