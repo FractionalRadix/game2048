@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameBoardView: GameBoardView
     private lateinit var mGestureDetector: GestureDetectorCompat
 
-    //TODO!~ Use a smaller font for the numbers. (Or maybe even custom graphics...?)
     //TODO!+ Let player know (and possibly restart) if 2048 is reached.
     //TODO!+ Implement Load, Save, and perhaps Share buttons?
 
@@ -43,16 +42,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
 
-        val scoreText = resources.getString(R.string.score)
-        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
+        updateScoreDisplay()
     }
 
     private fun newGame() {
         gameViewModel.startNewGame()
         gameBoardView.updateGameState(gameViewModel.getGameState())
 
-        val scoreText = resources.getString(R.string.score)
-        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
+        updateScoreDisplay()
     }
 
     fun load() {
@@ -156,8 +153,12 @@ class MainActivity : AppCompatActivity() {
         }
         gameBoardView.updateGameState(gameViewModel.getGameState())
 
-        val scoreText = resources.getString(R.string.score)
-        findViewById<TextView>(R.id.scoreView).text = "$scoreText ${gameViewModel.getGameState().score}"
+        updateScoreDisplay()
+    }
+
+    private fun updateScoreDisplay() {
+        val scoreText = getString(R.string.score, gameViewModel.getGameState().score)
+        findViewById<TextView>(R.id.scoreView).text = scoreText
     }
 
 }

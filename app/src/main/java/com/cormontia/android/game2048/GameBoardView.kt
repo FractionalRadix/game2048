@@ -49,10 +49,17 @@ class GameBoardView : View {
         blackPaint.textSize = 30f
 
         val backgroundColors = mapOf(
-            2 to rgb(255, 255, 0),
-            4 to rgb(255, 192, 0),
-            8 to rgb(255, 128, 0),
-            16 to rgb(255, 64, 0)
+              2  to rgb(255, 255,   0),
+              4  to rgb(255, 192,   0),
+              8  to rgb(255, 128,   0),
+             16  to rgb(  0, 192, 255),
+             32  to rgb(  0, 128, 255),
+             64  to rgb(  0,  64, 255),
+             128 to rgb(  0,   0, 255),
+             256 to rgb(  0,  64,   0),
+             512 to rgb(  0, 128,   0),
+            1024 to rgb(  0, 192,   0),
+            2048 to rgb(  0, 255,   0)
         )
 
         backgroundPaints = backgroundColors
@@ -123,8 +130,16 @@ class GameBoardView : View {
                         canvas.drawRect(smallRect, backgroundPaint)
                     }
 
-                    //TODO!~ Adjust these offsets...
-                    canvas.drawText(fieldValue.toString(), (x + 50).toFloat(), (y + 50).toFloat(), blackPaint)
+                    //TODO!~ Adjust these offsets. Y-offset is good now, but X-offset needs to be variable, so we can center it.
+                    val xOffset = if (fieldValue > 1000)
+                        10
+                    else if (fieldValue > 100)
+                        25
+                    else if (fieldValue > 10)
+                        40
+                    else
+                        50
+                    canvas.drawText(fieldValue.toString(), (x + xOffset).toFloat(), (y + 50).toFloat(), blackPaint)
                 }
 
                 canvas.drawRect(smallRect, blackPaint)

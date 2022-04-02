@@ -91,19 +91,31 @@ class GameViewModel : ViewModel() {
 
             // Second, if two adjacent fields have the same value, collapse them into one.
             if (shiftedRow[4] != null && shiftedRow[4] == shiftedRow[3]) {
-                shiftedRow[4] = shiftedRow[4]!! + shiftedRow[3]!!
+                val sum = shiftedRow[4]!! + shiftedRow[3]!!
+                shiftedRow[4] = sum
                 shiftedRow.remove(3)
-                score += shiftedRow[4]!!
+                score += sum
+                if (sum >= 2048) {
+                    //TODO!+ We have a winner!
+                }
             }
             if (shiftedRow[3] != null && shiftedRow[3] == shiftedRow[2]) {
-                shiftedRow[3] = shiftedRow[3]!! + shiftedRow[2]!!
+                val sum = shiftedRow[3]!! + shiftedRow[2]!!
+                shiftedRow[3] = sum
                 shiftedRow.remove(2)
-                score += shiftedRow[3]!!
+                score += sum
+                if (sum >= 2048) {
+                    //TODO!+ We have a winner!
+                }
             }
             if (shiftedRow[2] != null && shiftedRow[2] == shiftedRow[1]) {
-                shiftedRow[2] = shiftedRow[2]!! + shiftedRow[1]!!
+                val sum = shiftedRow[2]!! + shiftedRow[1]!!
+                shiftedRow[2] = sum
                 shiftedRow.remove(1)
-                score += shiftedRow[2]!!
+                score += sum
+                if (sum >= 2048) {
+                    //TODO!+ We have a winner!
+                }
             }
 
             shiftedRow = shift(shiftedRow)
