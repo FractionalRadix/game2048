@@ -24,6 +24,10 @@ class GameViewModel : ViewModel() {
      */
     private var startOfGame = true
 
+    class ShiftAndCollapseResult(val newRow: Map<Int, Int>, val score: Int, val winner: Boolean) {
+
+    }
+
     companion object StaticMethods {
 
         fun shift(row: Map<Int, Int>): MutableMap<Int, Int> {
@@ -90,56 +94,8 @@ class GameViewModel : ViewModel() {
             return list
         }
 
-        /**
-         * Find the index of the first empty cell in the list, starting from (including) `start`.
-         * For example, if the (1-based) list is [2,_,2,_,_,8] then firstEmptyCell(3) will return 4, and firstEmptyCell(5) will return 5.
-         * @return The index of the first empty cell from `start`, or the length of the list if there is no such cell.
-         */
-        fun firstEmptyCellFrom(list: FieldList, start: Int): Int {
-            val firstEmpty: Int
-            var idx = start
-            while (idx <= list.length && list[idx] != null)
-                idx++
-            return idx
-        }
-
-        /**
-         * Find the index of first non-empty cell in the list, starting from (including) `start`.
-         * For example, if the (1-based) list is [2,_,8,4,_,8] then firstNonEmptyCell(1) will return 1, firstNonEmptyCell(4) will return 4.
-         */
-        fun firstNonEmptyCellFrom(list: FieldList, start: Int): Int {
-            var idx = start
-            while (idx <= list.length && list[idx] == null) {
-                idx++
-            }
-            return idx
-        }
-
-        /**
-         * Given a FieldList, determine the ranges of empty cells in them.
-         * For example, the 1-based list [_,_,_,4,4,_] will yield [(1,3),(6,6)]
-         * @param list A FieldList that may contain empty fields, i.e. fields that are <code>null</code>.
-         * @return A list of IntRanges, where each IntRange corresponds to a series of 1 or more consecutive empty cells.
-         */
-        fun determineGaps(list: FieldList): List<IntRange> {
-            val gaps = mutableListOf<IntRange>()
-
-            var nextIdx = 1
-            do {
-                val startOfGap = firstEmptyCellFrom(list, nextIdx)
-                if (startOfGap <= list.length) {
-                    val endOfGap = firstNonEmptyCellFrom(list, startOfGap) - 1
-                    gaps.add(IntRange(startOfGap, endOfGap))
-                    nextIdx = endOfGap + 2 // endOfGap + 1 is the non-empty cell, so the first candidate for the next EMPTY  cell is endOfGap + 2
-                }
-
-            } while (startOfGap <= list.length && nextIdx <= list.length)
-
-            return gaps
-        }
-
         fun shiftAndCollapse(list: FieldList): FieldList {
-            val gaps = determineGaps(list)
+            val gaps = list.determineGaps()
 
             //TODO!+ Now that you know the gaps, shift over them.
             // And keep in mind to merge blocks if they have the same value.
@@ -170,9 +126,10 @@ class GameViewModel : ViewModel() {
          * The first is a new row, where all elements are shifted as far to the highest position as possible, with adjacent equal fields collapsed int one.
          * The second is the "score", the value of all elements that were merged, summed together.
          */
-        fun shiftAndCollapse(row: Map<Int, Int>): Pair<Map<Int, Int>, Int> {
+        fun shiftAndCollapse(row: Map<Int, Int>): ShiftAndCollapseResult {
 
             var score = 0
+            var winner = false
 
             // First, shift all the elements as far to the end as you can.
             var shiftedRow = shift(row)
@@ -184,7 +141,7 @@ class GameViewModel : ViewModel() {
                 shiftedRow.remove(3)
                 score += sum
                 if (sum >= 2048) {
-                    //TODO!+ We have a winner!
+                    winner = true
                 }
             }
             if (shiftedRow[3] != null && shiftedRow[3] == shiftedRow[2]) {
@@ -193,7 +150,7 @@ class GameViewModel : ViewModel() {
                 shiftedRow.remove(2)
                 score += sum
                 if (sum >= 2048) {
-                    //TODO!+ We have a winner!
+                    winner = true
                 }
             }
             if (shiftedRow[2] != null && shiftedRow[2] == shiftedRow[1]) {
@@ -202,13 +159,14 @@ class GameViewModel : ViewModel() {
                 shiftedRow.remove(1)
                 score += sum
                 if (sum >= 2048) {
-                    //TODO!+ We have a winner!
+                    winner = true
                 }
             }
 
             shiftedRow = shift(shiftedRow)
 
-            return Pair(shiftedRow, score)
+            //return Pair(shiftedRow, score)
+            return ShiftAndCollapseResult(shiftedRow, score, winner)
         }
 
         /**
@@ -349,15 +307,15 @@ class GameViewModel : ViewModel() {
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
             val shiftedRow = shiftAndCollapse(row)
-            if (!equal(row, shiftedRow.first)) {
+            if (!equal(row, shiftedRow.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedRow.second
+            currentGameState.score += shiftedRow.score
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row.
-            for (elt in shiftedRow.first) {
+            for (elt in shiftedRow.newRow) {
                 currentGameState.state[Coor(rowIdx, elt.key)] = elt.value
             }
         }
@@ -381,15 +339,15 @@ class GameViewModel : ViewModel() {
             val row = currentGameState.getRow(rowIdx)
 
             val shiftedRow = shiftAndCollapse(reverseRowOrColumn(row))
-            if (!equal(reverseRowOrColumn(row), shiftedRow.first)) {
+            if (!equal(reverseRowOrColumn(row), shiftedRow.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedRow.second
+            currentGameState.score += shiftedRow.score
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row, but in reverse order.
-            for (elt in shiftedRow.first) {
+            for (elt in shiftedRow.newRow) {
                 currentGameState.state[Coor(rowIdx, 5 - elt.key)] = elt.value
             }
         }
@@ -413,15 +371,15 @@ class GameViewModel : ViewModel() {
             val col = currentGameState.getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(reverseRowOrColumn(col))
 
-            if (!equal(reverseRowOrColumn(col), shiftedCol.first)) {
+            if (!equal(reverseRowOrColumn(col), shiftedCol.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedCol.second
+            currentGameState.score += shiftedCol.score
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column, but in reverse order.
-            for (elt in shiftedCol.first) {
+            for (elt in shiftedCol.newRow) {
                 currentGameState.state[Coor(5 - elt.key, colIdx)] = elt.value
             }
         }
@@ -445,15 +403,15 @@ class GameViewModel : ViewModel() {
             val col = currentGameState.getColumn(colIdx)
             val shiftedCol = shiftAndCollapse(col)
 
-            if (!equal(col, shiftedCol.first)) {
+            if (!equal(col, shiftedCol.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedCol.second
+            currentGameState.score += shiftedCol.score
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column.
-            for (elt in shiftedCol.first) {
+            for (elt in shiftedCol.newRow) {
                 currentGameState.state[Coor(elt.key, colIdx)] = elt.value
             }
         }
