@@ -51,6 +51,34 @@ interface FieldList {
         return gaps
     }
 
+    /**
+     * Move elements in this list backwards (towards lower indices).
+     * Starting at position `startOfShift`,
+     * For example, backShift(5,2) on [8,8,_,_,3,1,4] results in [8,8,3,1,4,_,_]
+     */
+    fun backShift(startOfShift: Int, amountOfShift: Int) {
+        for (idx in startOfShift .. length) {
+            this[idx - amountOfShift] = this[idx]
+        }
+        for (idx in 0 until amountOfShift) {
+            this[length - idx] = null
+        }
+    }
+
+    /**
+     * Given a list, determine if its contents is the same as this FieldList.
+     * @return <code>true</code> if and only if the contents of the two lists is the same.
+     */
+    fun equal(list: List<Int?>): Boolean {
+        if (list.size != this.length)
+            return false
+        for (idx in 1..length) {
+            if (this[idx] != list[idx - 1])
+                return false
+        }
+        return true
+    }
+
 }
 
 class RowFieldList(private val gameState: GameState, private val rowIdx: Int, override val length: Int) : FieldList {

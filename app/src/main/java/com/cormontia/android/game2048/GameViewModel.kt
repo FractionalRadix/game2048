@@ -7,7 +7,9 @@ import kotlin.collections.HashMap
 
 data class Coor(val row: Int, val col:Int)
 
-//TODO!~ We need TWO game-states here.
+data class MoveResult(val changeOccurred: Boolean, val winner: Boolean)
+
+//TODO?~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
 // That saves a lot of deep-copying.
 // Also: note that if we switch to using "FieldList", a lot of the changes will be in-place.
@@ -24,9 +26,7 @@ class GameViewModel : ViewModel() {
      */
     private var startOfGame = true
 
-    class ShiftAndCollapseResult(val newRow: Map<Int, Int>, val score: Int, val winner: Boolean) {
-
-    }
+    class ShiftAndCollapseResult(val newRow: Map<Int, Int>, val score: Int, val winner: Boolean)
 
     companion object StaticMethods {
 
@@ -277,6 +277,7 @@ class GameViewModel : ViewModel() {
         // 1. If there is at least 1 open field, then the user can make a move.
         if (!findEmptyPositions().isEmpty())
             return true
+
         // 2. If there are at least 2 fields with the same value adjacent to each other, then the user can make a move.
         for (rowIdx in 1..4) {
             for (colIdx in 1..3) {
@@ -292,7 +293,7 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        // 3. If neither of these conditions hold, then the playe rhas no more moves available.
+        // 3. If neither of these conditions hold, then the player has no more moves available.
         return false
     }
 
@@ -300,22 +301,26 @@ class GameViewModel : ViewModel() {
      * Adjust the game board if the player moves values to the right.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun right(): Boolean {
+    fun right(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
+        var winner = false
 
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
-            val shiftedRow = shiftAndCollapse(row)
-            if (!equal(row, shiftedRow.newRow)) {
+            val shiftAndCollapseResult = shiftAndCollapse(row)
+            if (!equal(row, shiftAndCollapseResult.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedRow.score
+            currentGameState.score += shiftAndCollapseResult.score
+            if (shiftAndCollapseResult.winner) {
+                winner = true
+            }
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row.
-            for (elt in shiftedRow.newRow) {
+            for (elt in shiftAndCollapseResult.newRow) {
                 currentGameState.state[Coor(rowIdx, elt.key)] = elt.value
             }
         }
@@ -324,30 +329,34 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return changeOccurred
+        return MoveResult(changeOccurred, winner)
     }
 
     /**
      * Adjust the game board if the player moves values to the left.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun left(): Boolean {
+    fun left(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
+        var winner = false
 
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
 
-            val shiftedRow = shiftAndCollapse(reverseRowOrColumn(row))
-            if (!equal(reverseRowOrColumn(row), shiftedRow.newRow)) {
+            val shiftAndCollapseResult = shiftAndCollapse(reverseRowOrColumn(row))
+            if (!equal(reverseRowOrColumn(row), shiftAndCollapseResult.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedRow.score
+            currentGameState.score += shiftAndCollapseResult.score
+            if (shiftAndCollapseResult.winner) {
+                winner = true
+            }
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
             // Insert the transformed row, but in reverse order.
-            for (elt in shiftedRow.newRow) {
+            for (elt in shiftAndCollapseResult.newRow) {
                 currentGameState.state[Coor(rowIdx, 5 - elt.key)] = elt.value
             }
         }
@@ -356,30 +365,34 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return changeOccurred
+        return MoveResult(changeOccurred, winner)
     }
 
     /**
      * Adjust the game board if the player moves values up.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun up(): Boolean {
+    fun up(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
+        var winner = false
 
         for (colIdx in 1..4) {
             val col = currentGameState.getColumn(colIdx)
-            val shiftedCol = shiftAndCollapse(reverseRowOrColumn(col))
+            val shiftAndCollapseResult = shiftAndCollapse(reverseRowOrColumn(col))
 
-            if (!equal(reverseRowOrColumn(col), shiftedCol.newRow)) {
+            if (!equal(reverseRowOrColumn(col), shiftAndCollapseResult.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedCol.score
+            currentGameState.score += shiftAndCollapseResult.score
+            if (shiftAndCollapseResult.winner) {
+                winner = true
+            }
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column, but in reverse order.
-            for (elt in shiftedCol.newRow) {
+            for (elt in shiftAndCollapseResult.newRow) {
                 currentGameState.state[Coor(5 - elt.key, colIdx)] = elt.value
             }
         }
@@ -388,30 +401,34 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return changeOccurred
+        return MoveResult(changeOccurred, winner)
     }
 
     /**
      * Adjust the game board if the player moves values down.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun down(): Boolean {
+    fun down(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
+        var winner = false
 
         for (colIdx in 1..4) {
             val col = currentGameState.getColumn(colIdx)
-            val shiftedCol = shiftAndCollapse(col)
+            val shiftAndCollapseResult = shiftAndCollapse(col)
 
-            if (!equal(col, shiftedCol.newRow)) {
+            if (!equal(col, shiftAndCollapseResult.newRow)) {
                 changeOccurred = true
             }
-            currentGameState.score += shiftedCol.score
+            currentGameState.score += shiftAndCollapseResult.score
+            if (shiftAndCollapseResult.winner) {
+                winner = true
+            }
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
             // Insert the transformed column.
-            for (elt in shiftedCol.newRow) {
+            for (elt in shiftAndCollapseResult.newRow) {
                 currentGameState.state[Coor(elt.key, colIdx)] = elt.value
             }
         }
@@ -420,7 +437,7 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return changeOccurred
+        return MoveResult(changeOccurred, winner)
     }
 
     fun undo() {

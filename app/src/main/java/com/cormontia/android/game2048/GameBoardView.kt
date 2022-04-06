@@ -130,7 +130,6 @@ class GameBoardView : View {
                         canvas.drawRect(smallRect, backgroundPaint)
                     }
 
-                    //TODO!~ Adjust these offsets. Y-offset is good now, but X-offset needs to be variable, so we can center it.
                     val xOffset = if (fieldValue > 1000)
                         10
                     else if (fieldValue > 100)

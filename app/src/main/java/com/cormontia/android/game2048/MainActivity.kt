@@ -63,11 +63,13 @@ class MainActivity : AppCompatActivity() {
     private fun undo() {
         gameViewModel.undo()
         gameBoardView.updateGameState(gameViewModel.getGameState())
+        updateScoreDisplay()
     }
 
     private fun redo() {
         gameViewModel.redo()
         gameBoardView.updateGameState(gameViewModel.getGameState())
+        updateScoreDisplay()
     }
 
     fun share() {
@@ -131,19 +133,19 @@ class MainActivity : AppCompatActivity() {
     //  These are both called from the gesture detector, and wired to the buttons.
 
     private fun right() {
-        move(fun() = gameViewModel.right() )
+        move(fun() = gameViewModel.right().changeOccurred )
     }
 
     private fun left() {
-        move(fun() = gameViewModel.left() )
+        move(fun() = gameViewModel.left().changeOccurred )
     }
 
     private fun up() {
-        move(fun() = gameViewModel.up() )
+        move(fun() = gameViewModel.up().changeOccurred )
     }
 
     private fun down() {
-        move(fun() = gameViewModel.down() )
+        move(fun() = gameViewModel.down().changeOccurred )
     }
 
     private fun move(moveInModel: () -> Boolean) {
