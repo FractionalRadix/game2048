@@ -5,10 +5,6 @@ import androidx.lifecycle.ViewModel
 import java.util.*
 import kotlin.collections.HashMap
 
-data class Coor(val row: Int, val col:Int)
-
-data class MoveResult(val changeOccurred: Boolean, val winner: Boolean)
-
 //TODO?~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
 // That saves a lot of deep-copying.
@@ -25,8 +21,6 @@ class GameViewModel : ViewModel() {
      * Check if the game has only just started, or if `init` is called due to an orientation change.
      */
     private var startOfGame = true
-
-    class ShiftAndCollapseResult(val newRow: Map<Int, Int>, val score: Int, val winner: Boolean)
 
     companion object StaticMethods {
 
