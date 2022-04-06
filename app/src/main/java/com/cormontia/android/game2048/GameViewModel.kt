@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.math.max
 
 //TODO?~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
@@ -123,7 +124,7 @@ class GameViewModel : ViewModel() {
         fun shiftAndCollapse(row: Map<Int, Int>): ShiftAndCollapseResult {
 
             var score = 0
-            var winner = false
+            var highestNewValue = 0
 
             // First, shift all the elements as far to the end as you can.
             var shiftedRow = shift(row)
@@ -134,33 +135,26 @@ class GameViewModel : ViewModel() {
                 shiftedRow[4] = sum
                 shiftedRow.remove(3)
                 score += sum
-                if (sum >= 2048) {
-                    winner = true
-                }
+                highestNewValue = max(sum, highestNewValue)
             }
             if (shiftedRow[3] != null && shiftedRow[3] == shiftedRow[2]) {
                 val sum = shiftedRow[3]!! + shiftedRow[2]!!
                 shiftedRow[3] = sum
                 shiftedRow.remove(2)
                 score += sum
-                if (sum >= 2048) {
-                    winner = true
-                }
+                highestNewValue = max(sum, highestNewValue)
             }
             if (shiftedRow[2] != null && shiftedRow[2] == shiftedRow[1]) {
                 val sum = shiftedRow[2]!! + shiftedRow[1]!!
                 shiftedRow[2] = sum
                 shiftedRow.remove(1)
                 score += sum
-                if (sum >= 2048) {
-                    winner = true
-                }
+                highestNewValue = max(sum, highestNewValue)
             }
 
             shiftedRow = shift(shiftedRow)
 
-            //return Pair(shiftedRow, score)
-            return ShiftAndCollapseResult(shiftedRow, score, winner)
+            return ShiftAndCollapseResult(shiftedRow, score, highestNewValue)
         }
 
         /**
@@ -298,7 +292,7 @@ class GameViewModel : ViewModel() {
     fun right(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var winner = false
+        var highestNewValue = 0
 
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
@@ -307,9 +301,7 @@ class GameViewModel : ViewModel() {
                 changeOccurred = true
             }
             currentGameState.score += shiftAndCollapseResult.score
-            if (shiftAndCollapseResult.winner) {
-                winner = true
-            }
+            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
@@ -323,7 +315,7 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return MoveResult(changeOccurred, winner)
+        return MoveResult(changeOccurred, highestNewValue)
     }
 
     /**
@@ -333,7 +325,7 @@ class GameViewModel : ViewModel() {
     fun left(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var winner = false
+        var highestNewValue = 0
 
         for (rowIdx in 1..4) {
             val row = currentGameState.getRow(rowIdx)
@@ -343,9 +335,7 @@ class GameViewModel : ViewModel() {
                 changeOccurred = true
             }
             currentGameState.score += shiftAndCollapseResult.score
-            if (shiftAndCollapseResult.winner) {
-                winner = true
-            }
+            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
@@ -359,7 +349,7 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return MoveResult(changeOccurred, winner)
+        return MoveResult(changeOccurred, highestNewValue)
     }
 
     /**
@@ -369,7 +359,7 @@ class GameViewModel : ViewModel() {
     fun up(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var winner = false
+        var highestNewValue = 0
 
         for (colIdx in 1..4) {
             val col = currentGameState.getColumn(colIdx)
@@ -379,9 +369,7 @@ class GameViewModel : ViewModel() {
                 changeOccurred = true
             }
             currentGameState.score += shiftAndCollapseResult.score
-            if (shiftAndCollapseResult.winner) {
-                winner = true
-            }
+            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
@@ -395,7 +383,7 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return MoveResult(changeOccurred, winner)
+        return MoveResult(changeOccurred, highestNewValue)
     }
 
     /**
@@ -405,7 +393,7 @@ class GameViewModel : ViewModel() {
     fun down(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var winner = false
+        var highestNewValue = 0
 
         for (colIdx in 1..4) {
             val col = currentGameState.getColumn(colIdx)
@@ -415,9 +403,7 @@ class GameViewModel : ViewModel() {
                 changeOccurred = true
             }
             currentGameState.score += shiftAndCollapseResult.score
-            if (shiftAndCollapseResult.winner) {
-                winner = true
-            }
+            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
 
             // Remove the old column.
             currentGameState.state.keys.removeIf { it.col == colIdx }
@@ -431,7 +417,7 @@ class GameViewModel : ViewModel() {
             updateHistory(cachedGameState)
         }
 
-        return MoveResult(changeOccurred, winner)
+        return MoveResult(changeOccurred, highestNewValue)
     }
 
     fun undo() {

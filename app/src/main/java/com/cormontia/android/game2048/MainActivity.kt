@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
@@ -133,28 +135,32 @@ class MainActivity : AppCompatActivity() {
     //  These are both called from the gesture detector, and wired to the buttons.
 
     private fun right() {
-        move(fun() = gameViewModel.right().changeOccurred )
+        move(fun() = gameViewModel.right())
     }
 
     private fun left() {
-        move(fun() = gameViewModel.left().changeOccurred )
+        move(fun() = gameViewModel.left())
     }
 
     private fun up() {
-        move(fun() = gameViewModel.up().changeOccurred )
+        move(fun() = gameViewModel.up())
     }
 
     private fun down() {
-        move(fun() = gameViewModel.down().changeOccurred )
+        move(fun() = gameViewModel.down())
     }
 
-    private fun move(moveInModel: () -> Boolean) {
+    private fun move(moveInModel: () -> MoveResult) {
         val gameStateChanged = moveInModel()
-        if (gameStateChanged) {
+        if (gameStateChanged.changeOccurred) {
             gameViewModel.placeNewValue()
         }
         gameBoardView.updateGameState(gameViewModel.getGameState())
-
+        if (gameStateChanged.highestNewValue >= 2048) {
+            //TODO?~ Turn this into a nice animation.
+            val winningBanner = findViewById<ImageView>(R.id.win2048)
+            winningBanner.visibility = View.VISIBLE
+        }
         updateScoreDisplay()
     }
 
