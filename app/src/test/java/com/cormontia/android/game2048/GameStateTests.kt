@@ -88,4 +88,20 @@ class GameStateTests {
         assert(output[3] == 2)
         assert(output[4] == 4)
     }
+
+    @Test
+    fun testToJson() {
+        val state = mutableMapOf(
+            Pair(Coor(1,3), 4),
+            Pair(Coor(4,4), 8)
+        )
+        val score = 40
+        val gameState = GameState(state, score)
+        val jsonResult = gameState.toJson()
+        //TODO!~ Get this to work... the debugger in the IDE can't turn a JSONResult into a String...
+        assert(jsonResult[0] == "40")
+        assert(jsonResult[1] == "0")
+        assert(jsonResult[3] == "4")
+        assert(jsonResult[16] == "8")
+    }
 }

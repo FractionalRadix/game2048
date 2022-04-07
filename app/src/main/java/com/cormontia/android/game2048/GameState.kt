@@ -1,5 +1,7 @@
 package com.cormontia.android.game2048
 
+import org.json.JSONArray
+
 data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     /**
      * Make a deep copy of the current game state.
@@ -32,4 +34,41 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
         .filterKeys { it.col == colIdx }
         .map { Pair(it.key.row, it.value) }
         .toMap()
+
+    fun toJson(): JSONArray {
+        // Game state is serialized as: [score, value of position (row-1,col-1), value of position (row-1, col-2)... value of position (row-4, col-4) ]
+        // If a position is empty, we use a 0 (zero).
+        var idx = 0
+        val intArray = Array(17) { _ -> 0 }
+
+        intArray[idx++] = score
+        for (rowIdx in 1..4) {
+            for (colIdx in 1..4) {
+                val coor = Coor(rowIdx, colIdx)
+                val value = this.state[coor]
+                intArray[idx++] = value ?: 0
+            }
+        }
+        val result = JSONArray(intArray)
+        return result
+    }
+
+    //TODO!+ Add unit tests for this.
+    fun fromJson(values: JSONArray) {
+        score = values[0] as Int
+        var rowIdx = 1
+        var colIdx = 1
+        for (i in 1 until values.length()) {
+            val currentValue = values[i] as Int
+            colIdx++
+            if (colIdx > 4) {
+                rowIdx++
+                colIdx = 1
+            }
+            if (currentValue != 0) {
+                val key = Coor(rowIdx, colIdx)
+                state[key] = currentValue
+            }
+        }
+    }
 }
