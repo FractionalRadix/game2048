@@ -223,6 +223,11 @@ class GameViewModel : ViewModel() {
         return currentGameState
     }
 
+    fun setGameState(state: GameState) {
+        currentGameState = state
+        //TODO?+ Notify observers of a changed game state...?
+    }
+
     /**
      * Find a random empty spot on the game board.
      * Put a 2 or a 4 in it.

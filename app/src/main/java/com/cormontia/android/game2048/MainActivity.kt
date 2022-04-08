@@ -1,5 +1,6 @@
 package com.cormontia.android.game2048
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -11,6 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
@@ -43,33 +46,88 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.newGameButton).setOnClickListener{ newGame() }
         findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
+        findViewById<ImageButton>(R.id.saveButton).setOnClickListener { save() }
+        findViewById<ImageButton>(R.id.loadButton).setOnClickListener { load() }
 
         updateScoreDisplay()
     }
 
     private fun newGame() {
         gameViewModel.startNewGame()
-        gameBoardView.updateGameState(gameViewModel.getGameState())
-
-        updateScoreDisplay()
+        updateView()
     }
 
+    private val storageFileMimeType = "text/plain"
+
+    private val loadCode = 14
     fun load() {
-        TODO()
+        val loadIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        loadIntent.addCategory(Intent.CATEGORY_OPENABLE)
+        loadIntent.type = storageFileMimeType
+        startActivityForResult(loadIntent, loadCode)
     }
 
+    private val saveCode = 21
     fun save() {
-        TODO()
+        // "Note: ACTION_CREATE_DOCUMENT cannot overwrite an existing file.
+        //  If your app tries to save a file with the same name, the system appends a number in parentheses at the end of the file name."
+        // Source: https://developer.android.com/training/data-storage/shared/documents-files#create-file
+        val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+        saveIntent.type = storageFileMimeType
+        saveIntent.putExtra(Intent.EXTRA_TITLE, "state2048.txt") //TODO?~ Add timestamp or something to make it unique?
+        //TODO!~ startActivityForResult is deprecated; replace this code with its modern counterpart.
+        val result = startActivityForResult(saveIntent, saveCode)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        super.onActivityResult(requestCode, resultCode, resultData)
+
+        val uri = resultData?.data
+        when (requestCode) {
+            saveCode -> {
+                if (uri != null) {
+                    //TODO!+ Handle FileNotFoundException and IOException
+                    val contentResolver = applicationContext.contentResolver
+                    val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "w")
+                    val fos = FileOutputStream(parcelFileDescriptor?.fileDescriptor)
+                    val dataBytes = gameViewModel.getGameState().serialize()
+                        .toByteArray()  // Maybe I should serialize to bytes straight away...
+                    fos.write(dataBytes)
+                }
+            }
+            loadCode -> {
+                if (uri != null) {
+                    val contentResolver = applicationContext.contentResolver
+                    val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+                    val fis = FileInputStream(parcelFileDescriptor?.fileDescriptor)
+                    val byteArray = fis.readBytes()
+                    val str = String(byteArray)
+                    //TODO!+ Make de-serializing a GameState a static method...
+                    val dummyGameState = GameState(mutableMapOf(),0)
+                    val readGameState = dummyGameState.deserialize(str)
+                    gameViewModel.setGameState(readGameState)
+
+                    updateView()
+
+                }
+
+            }
+        }
+
     }
 
     private fun undo() {
         gameViewModel.undo()
-        gameBoardView.updateGameState(gameViewModel.getGameState())
-        updateScoreDisplay()
+        updateView()
     }
 
     private fun redo() {
         gameViewModel.redo()
+        updateView()
+    }
+
+    //TODO?~ Shouldn't this be called using the Observer mechanism, getting notified if the ViewModel's game state changes?
+    private fun updateView() {
         gameBoardView.updateGameState(gameViewModel.getGameState())
         updateScoreDisplay()
     }

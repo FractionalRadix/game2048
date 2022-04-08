@@ -1,7 +1,5 @@
 package com.cormontia.android.game2048
 
-import org.json.JSONArray
-
 data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     /**
      * Make a deep copy of the current game state.
@@ -35,7 +33,9 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
         .map { Pair(it.key.row, it.value) }
         .toMap()
 
-    fun toJson(): JSONArray {
+    //TODO!~ Either list "null" as "null" instead of "0", or don't make this an override of toString().
+    // Right now it is confusing.
+    fun serialize(): String {
         // Game state is serialized as: [score, value of position (row-1,col-1), value of position (row-1, col-2)... value of position (row-4, col-4) ]
         // If a position is empty, we use a 0 (zero).
         var idx = 0
@@ -49,26 +49,35 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
                 intArray[idx++] = value ?: 0
             }
         }
-        val result = JSONArray(intArray)
-        return result
+
+        return intArray.joinToString(separator = ",")
     }
 
-    //TODO!+ Add unit tests for this.
-    fun fromJson(values: JSONArray) {
-        score = values[0] as Int
+    fun deserialize(str: String): GameState {
+        val values = str
+            .split(",")
+            .map { it.toInt() } //TODO!+ Handle NumberFormatException... and add a unit test for that case.
+
+        val score = values[0]
+        val fields = mutableMapOf<Coor,Int>()
         var rowIdx = 1
         var colIdx = 1
-        for (i in 1 until values.length()) {
-            val currentValue = values[i] as Int
+        for (i in 1 until values.size) {
+            val currentValue = values[i]
+
+            if (currentValue != 0) {
+                val key = Coor(rowIdx, colIdx)
+                fields[key] = currentValue
+            }
+
             colIdx++
             if (colIdx > 4) {
                 rowIdx++
                 colIdx = 1
             }
-            if (currentValue != 0) {
-                val key = Coor(rowIdx, colIdx)
-                state[key] = currentValue
-            }
+
         }
+
+        return GameState(fields, score)
     }
 }
