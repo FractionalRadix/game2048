@@ -21,8 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameBoardView: GameBoardView
     private lateinit var mGestureDetector: GestureDetectorCompat
 
-    //TODO!+ Let player know (and possibly restart) if 2048 is reached.
-    //TODO!+ Implement Load, Save, and perhaps Share buttons?
+    //TODO?+ Implement Share buttons? Or drop it?
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,34 +48,34 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.saveButton).setOnClickListener { save() }
         findViewById<ImageButton>(R.id.loadButton).setOnClickListener { load() }
 
-        updateScoreDisplay()
+        updateView()
     }
 
     private fun newGame() {
         gameViewModel.startNewGame()
         updateView()
+        showWinningBanner(false) //TODO?~ Shouldn't this be in the "updateView" somehow...?
     }
 
     private val storageFileMimeType = "text/plain"
 
     private val loadCode = 14
-    fun load() {
+    private fun load() {
         val loadIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         loadIntent.addCategory(Intent.CATEGORY_OPENABLE)
         loadIntent.type = storageFileMimeType
-        startActivityForResult(loadIntent, loadCode)
+        startActivityForResult(loadIntent, loadCode) //TODO!~ Use "registerForActivityResult" instead.
     }
 
     private val saveCode = 21
-    fun save() {
+    private fun save() {
         // "Note: ACTION_CREATE_DOCUMENT cannot overwrite an existing file.
         //  If your app tries to save a file with the same name, the system appends a number in parentheses at the end of the file name."
         // Source: https://developer.android.com/training/data-storage/shared/documents-files#create-file
         val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
         saveIntent.type = storageFileMimeType
         saveIntent.putExtra(Intent.EXTRA_TITLE, "state2048.txt") //TODO?~ Add timestamp or something to make it unique?
-        //TODO!~ startActivityForResult is deprecated; replace this code with its modern counterpart.
-        val result = startActivityForResult(saveIntent, saveCode)
+        startActivityForResult(saveIntent, saveCode) //TODO!~ Use "registerForActivityResult" instead.
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
@@ -108,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                     gameViewModel.setGameState(readGameState)
 
                     updateView()
-
+                    showWinningBanner(false) //TODO?~ Shouldn't this be determined elsewhere...?
                 }
 
             }
@@ -124,12 +123,6 @@ class MainActivity : AppCompatActivity() {
     private fun redo() {
         gameViewModel.redo()
         updateView()
-    }
-
-    //TODO?~ Shouldn't this be called using the Observer mechanism, getting notified if the ViewModel's game state changes?
-    private fun updateView() {
-        gameBoardView.updateGameState(gameViewModel.getGameState())
-        updateScoreDisplay()
     }
 
     fun share() {
@@ -213,12 +206,17 @@ class MainActivity : AppCompatActivity() {
         if (gameStateChanged.changeOccurred) {
             gameViewModel.placeNewValue()
         }
-        gameBoardView.updateGameState(gameViewModel.getGameState())
+
+        updateView()
         if (gameStateChanged.highestNewValue >= 2048) {
-            //TODO?~ Turn this into a nice animation.
-            val winningBanner = findViewById<ImageView>(R.id.win2048)
-            winningBanner.visibility = View.VISIBLE
+            showWinningBanner(true)
         }
+
+    }
+
+    //TODO?~ Shouldn't this be called using the Observer mechanism, getting notified if the ViewModel's game state changes?
+    private fun updateView() {
+        gameBoardView.updateGameState(gameViewModel.getGameState())
         updateScoreDisplay()
     }
 
@@ -226,5 +224,12 @@ class MainActivity : AppCompatActivity() {
         val scoreText = getString(R.string.score, gameViewModel.getGameState().score)
         findViewById<TextView>(R.id.scoreView).text = scoreText
     }
+
+    private fun showWinningBanner(visible: Boolean) {
+        //TODO?~ Turn this into a nice animation.
+        val winningBanner = findViewById<ImageView>(R.id.win2048)
+        winningBanner.visibility = if (visible) { View.VISIBLE } else { View.INVISIBLE }
+    }
+
 
 }
