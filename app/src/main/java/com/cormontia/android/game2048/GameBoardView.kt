@@ -17,7 +17,7 @@ import kotlin.math.abs
 /**
  * View to display a 2048 board.
  */
-class GameBoardView : View {
+class GameBoardView : View, View.OnLayoutChangeListener {
 
     private var gameBoard = GameState(HashMap(), 0)
 
@@ -26,6 +26,16 @@ class GameBoardView : View {
 
     // Paints for the different background colors:
     var backgroundPaints : Map<Int, Paint> = mutableMapOf()
+
+    // Window size variables.
+    private var windowSizeVariablesNeedRecalc = true
+    private var _paddingLeft = 0
+    private var _paddingTop = 0
+    private var _paddingRight = 0
+    private var _paddingBottom = 0
+    private var contentWidth = 0
+    private var contentHeight = 0
+
 
     constructor(context: Context) : super(context) {
         init(context, null, 0)
@@ -65,7 +75,19 @@ class GameBoardView : View {
         backgroundPaints = backgroundColors
             .map { (key, color) -> key to makePaintWithColor(color) }
             .toMap()
+
+        addOnLayoutChangeListener(this)
     }
+
+    override fun onLayoutChange(
+        view: View?,
+        left: Int, top: Int, right: Int, bottom: Int,
+        oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int,
+    ) {
+        //TODO?~ Can we do re-calculation here?
+        windowSizeVariablesNeedRecalc = true
+    }
+
 
     private fun makePaintWithColor(color: Int) : Paint {
         val paint = Paint()
@@ -79,11 +101,13 @@ class GameBoardView : View {
     }
 
     //TODO!- Just testing if I can send an Intent to the MainActivity...
+    /*
     private fun sendUpIntent() {
         val intent = Intent(context, MainActivity::class.java)
         intent.putExtra("direction", Direction.UP)
         context.sendBroadcast(intent)
     }
+     */
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         //super.onSizeChanged(w, h, oldw, oldh)
@@ -92,24 +116,29 @@ class GameBoardView : View {
         val widthForDrawing = w - xpad
         val heightForDrawing = h - ypad
         Log.i("2048-game", "widthForDrawing==$widthForDrawing, heightForDrawing=$heightForDrawing.")
+
+        windowSizeVariablesNeedRecalc = true
     }
 
     override fun onDraw(canvas: Canvas) {
-        //super.onDraw(canvas)
 
-        // TODO: consider storing these as member variables to reduce
-        // allocations per draw cycle.
-        val paddingLeft = paddingLeft
-        val paddingTop = paddingTop
-        val paddingRight = paddingRight
-        val paddingBottom = paddingBottom
+        //TODO?~ Can we use Lazy<..> for this?
+        //TODO!+ Set windowSizeVariablesNeedRecalc to "true" if the size changes!
+        if (windowSizeVariablesNeedRecalc) {
+            _paddingLeft = paddingLeft
+            _paddingTop = paddingTop
+            _paddingRight = paddingRight
+            _paddingBottom = paddingBottom
 
-        Log.i("2048-game", "paddingLeft==$paddingLeft.")
+            Log.i("2048-game", "paddingLeft==$_paddingLeft.")
 
-        val contentWidth = width - paddingLeft - paddingRight
-        val contentHeight = height - paddingTop - paddingBottom
+            contentWidth = width - _paddingLeft - _paddingRight
+            contentHeight = height - _paddingTop - _paddingBottom
 
-        Log.i("2048-game", "width==$width, height==$height")
+            Log.i("2048-game", "width==$width, height==$height")
+
+            windowSizeVariablesNeedRecalc = false
+        }
 
         // The width of our block is 400.
         // So it should start at (contentWidth / 2) - 200. Well, plus padding.
