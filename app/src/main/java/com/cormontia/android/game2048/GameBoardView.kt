@@ -84,7 +84,7 @@ class GameBoardView : View, View.OnLayoutChangeListener {
         left: Int, top: Int, right: Int, bottom: Int,
         oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int,
     ) {
-        //TODO?~ Can we do re-calculation here?
+        //TODO?~ Can we do the re-calculation here?
         windowSizeVariablesNeedRecalc = true
     }
 
@@ -100,15 +100,6 @@ class GameBoardView : View, View.OnLayoutChangeListener {
         invalidate()    // Force repaint.
     }
 
-    //TODO!- Just testing if I can send an Intent to the MainActivity...
-    /*
-    private fun sendUpIntent() {
-        val intent = Intent(context, MainActivity::class.java)
-        intent.putExtra("direction", Direction.UP)
-        context.sendBroadcast(intent)
-    }
-     */
-
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         //super.onSizeChanged(w, h, oldw, oldh)
         val xpad = paddingLeft + paddingRight
@@ -123,7 +114,6 @@ class GameBoardView : View, View.OnLayoutChangeListener {
     override fun onDraw(canvas: Canvas) {
 
         //TODO?~ Can we use Lazy<..> for this?
-        //TODO!+ Set windowSizeVariablesNeedRecalc to "true" if the size changes!
         if (windowSizeVariablesNeedRecalc) {
             _paddingLeft = paddingLeft
             _paddingTop = paddingTop

@@ -78,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(saveIntent, saveCode) //TODO!~ Use "registerForActivityResult" instead.
     }
 
+    // At the suggestion of Android Studio, add the deprecation message manually.
+    @Deprecated("'onActivityResult(Int, Int, Intent?): Unit' is deprecated. Overrides deprecated member in 'androidx.activity.ComponentActivity'. Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
 
@@ -210,6 +212,9 @@ class MainActivity : AppCompatActivity() {
         updateView()
         if (gameStateChanged.highestNewValue >= 2048) {
             showWinningBanner(true)
+        } else  {
+            val noMoreMoves = !gameViewModel.movesAvailable()
+            showLosingBanner(noMoreMoves)
         }
 
     }
@@ -229,6 +234,13 @@ class MainActivity : AppCompatActivity() {
         //TODO?~ Turn this into a nice animation.
         val winningBanner = findViewById<ImageView>(R.id.win2048)
         winningBanner.visibility = if (visible) { View.VISIBLE } else { View.INVISIBLE }
+    }
+
+    //TODO!- We shouldn't use an IMAGE to show TEXT!
+    // If nothing else, it makes translating unnecessarily complicated...
+    private fun showLosingBanner(visible: Boolean) {
+        val losingBanner = findViewById<ImageView>(R.id.losingBanner)
+        losingBanner.visibility = if (visible) { View.VISIBLE } else { View.INVISIBLE }
     }
 
 

@@ -266,7 +266,7 @@ class GameViewModel : ViewModel() {
      * Determine if there are still moves that the user can make.
      * @return <code>true</code> if and only if the user can still make a legal move.
      */
-    private fun movesAvailable(): Boolean {
+    fun movesAvailable(): Boolean {
         // 1. If there is at least 1 open field, then the user can make a move.
         if (!findEmptyPositions().isEmpty())
             return true

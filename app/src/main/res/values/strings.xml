@@ -11,4 +11,6 @@
     <string name="redo">Redo</string>
     <string name="share">Share</string>
     <string name="score">Score: %1$d</string>
+    <string name="winningMessage">2048 (you won!)</string>
+    <string name="losingMessage">No more moves possible! Undo a few moves and try again... or start a new game.</string>
 </resources>
