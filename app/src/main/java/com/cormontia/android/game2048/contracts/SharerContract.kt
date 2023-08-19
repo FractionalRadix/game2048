@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContract
+import com.cormontia.android.game2048.MainActivity
 
-class SharerContract : ActivityResultContract<String, Uri?>() {
-    override fun createIntent(context: Context, input: String?): Intent {
-        //TODO!~ Share a picture, instead of the file format....
+class SharerContract: ActivityResultContract<Uri, Uri?>() {
+    override fun createIntent(context: Context, bitmapUri: Uri): Intent {
         val sharingIntent = Intent(Intent.ACTION_SEND)
-        sharingIntent.type = "text/plain"
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, input)
+        sharingIntent.type = MainActivity.bitmapMimeType
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri)
         return sharingIntent
     }
 

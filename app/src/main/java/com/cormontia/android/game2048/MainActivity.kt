@@ -1,7 +1,12 @@
 package com.cormontia.android.game2048
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -15,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.cormontia.android.game2048.contracts.LoaderContract
 import com.cormontia.android.game2048.contracts.SaverContract
 import com.cormontia.android.game2048.contracts.SharerContract
+import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.math.abs
@@ -23,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val storageFileMimeType = "text/plain"
+        const val bitmapMimeType = "img/bmp"
     }
 
     private lateinit var gameViewModel: GameViewModel
@@ -57,7 +64,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
         findViewById<ImageButton>(R.id.saveButton).setOnClickListener { saveLauncher.launch("dummy") }
         findViewById<ImageView>(R.id.loadButton).setOnClickListener { loadLauncher.launch("dummy") }
-        findViewById<ImageView>(R.id.shareButton).setOnClickListener { shareLauncher.launch(gameViewModel.getGameState().serialize()) }
+        findViewById<ImageView>(R.id.shareButton).setOnClickListener {
+            val img = createImage()
+            val uri = getBitmapUrl(this, img)
+            shareLauncher.launch(uri)
+        }
 
         updateView()
     }
@@ -98,6 +109,28 @@ class MainActivity : AppCompatActivity() {
 
             //TODO!+  parcelFileDescriptor?.close()
         }
+    }
+
+    private fun createImage(): Bitmap {
+        //TODO!~ USe the right width and height. (As derived from the actual view...)
+        val bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        // We may want to get the background image or color from the View.
+        //  https://stackoverflow.com/a/38990869/812149
+        // For now, we just set it to white.
+        canvas.drawColor(Color.WHITE)
+        gameBoardView.draw(canvas)
+        return bitmap
+    }
+
+    private fun getBitmapUrl(context: Context, bitmap: Bitmap): Uri {
+        // Source: https://stackoverflow.com/a/38990869/812149
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100, outputStream)
+        //TODO!~ Do something about the title.
+        // Right now it sends the image as "Title.jpg", then "Title(1).jpg", etc.
+        val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
+        return Uri.parse(path)
     }
 
     private fun undo() {

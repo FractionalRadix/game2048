@@ -1,18 +1,13 @@
 package com.cormontia.android.game2048
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Color.rgb
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Log
-import android.view.GestureDetector
-import android.view.MotionEvent
 import android.view.View
-import androidx.core.view.GestureDetectorCompat
-import kotlin.math.abs
 
 /**
  * View to display a 2048 board.
