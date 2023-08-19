@@ -1,6 +1,7 @@
 package com.cormontia.android.game2048
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -12,16 +13,24 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
+import com.cormontia.android.game2048.contracts.LoaderContract
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val storageFileMimeType = "text/plain"
+    }
+
     private lateinit var gameViewModel: GameViewModel
     private lateinit var gameBoardView: GameBoardView
     private lateinit var mGestureDetector: GestureDetectorCompat
 
     //TODO?+ Implement Share buttons? Or drop it?
+
+    private val loadLauncher = registerForActivityResult(LoaderContract()) { uri -> load(uri) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
         findViewById<ImageButton>(R.id.saveButton).setOnClickListener { save() }
-        findViewById<ImageButton>(R.id.loadButton).setOnClickListener { load() }
+        findViewById<ImageView>(R.id.loadButton).setOnClickListener { loadLauncher.launch("dummy") }
 
         updateView()
     }
@@ -60,11 +69,23 @@ class MainActivity : AppCompatActivity() {
     private val storageFileMimeType = "text/plain"
 
     private val loadCode = 14
-    private fun load() {
-        val loadIntent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        loadIntent.addCategory(Intent.CATEGORY_OPENABLE)
-        loadIntent.type = storageFileMimeType
-        startActivityForResult(loadIntent, loadCode) //TODO!~ Use "registerForActivityResult" instead.
+
+    private fun load(uri: Uri?) {
+        if (uri != null) {
+            val contentResolver = applicationContext.contentResolver
+            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+            val fis = FileInputStream(parcelFileDescriptor?.fileDescriptor)
+            val byteArray = fis.readBytes()
+            val str = String(byteArray)
+            //TODO!+ Make de-serializing a GameState a static method...
+            val dummyGameState = GameState(mutableMapOf(),0)
+            val readGameState = dummyGameState.deserialize(str)
+            gameViewModel.setGameState(readGameState)
+            //TODO!+  parcelFileDescriptor?.close()
+
+            updateView()
+            showWinningBanner(false) //TODO?~ Shouldn't this be determined elsewhere...?
+        }
     }
 
     private val saveCode = 21
