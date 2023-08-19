@@ -1,6 +1,5 @@
 package com.cormontia.android.game2048
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
 import com.cormontia.android.game2048.contracts.LoaderContract
+import com.cormontia.android.game2048.contracts.SaverContract
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.math.abs
@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     //TODO?+ Implement Share buttons? Or drop it?
 
     private val loadLauncher = registerForActivityResult(LoaderContract()) { uri -> load(uri) }
+    private val saveLauncher = registerForActivityResult(SaverContract()) { uri -> save(uri) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.newGameButton).setOnClickListener{ newGame() }
         findViewById<ImageButton>(R.id.undoButton).setOnClickListener{ undo() }
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
-        findViewById<ImageButton>(R.id.saveButton).setOnClickListener { save() }
+        findViewById<ImageButton>(R.id.saveButton).setOnClickListener { saveLauncher.launch("dummy") }
         findViewById<ImageView>(R.id.loadButton).setOnClickListener { loadLauncher.launch("dummy") }
 
         updateView()
@@ -65,10 +66,6 @@ class MainActivity : AppCompatActivity() {
         updateView()
         showWinningBanner(false) //TODO?~ Shouldn't this be in the "updateView" somehow...?
     }
-
-    private val storageFileMimeType = "text/plain"
-
-    private val loadCode = 14
 
     private fun load(uri: Uri?) {
         if (uri != null) {
@@ -88,54 +85,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val saveCode = 21
-    private fun save() {
-        // "Note: ACTION_CREATE_DOCUMENT cannot overwrite an existing file.
-        //  If your app tries to save a file with the same name, the system appends a number in parentheses at the end of the file name."
-        // Source: https://developer.android.com/training/data-storage/shared/documents-files#create-file
-        val saveIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-        saveIntent.type = storageFileMimeType
-        saveIntent.putExtra(Intent.EXTRA_TITLE, "state2048.txt") //TODO?~ Add timestamp or something to make it unique?
-        startActivityForResult(saveIntent, saveCode) //TODO!~ Use "registerForActivityResult" instead.
-    }
+    private fun save(uri: Uri?) {
+        if (uri != null) {
+            //TODO!+ Handle FileNotFoundException and IOException
+            val contentResolver = applicationContext.contentResolver
+            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "w")
+            val fos = FileOutputStream(parcelFileDescriptor?.fileDescriptor)
+            val dataBytes = gameViewModel.getGameState().serialize()
+                .toByteArray()  // Maybe I should serialize to bytes straight away...
+            fos.write(dataBytes)
 
-    // At the suggestion of Android Studio, add the deprecation message manually.
-    @Deprecated("'onActivityResult(Int, Int, Intent?): Unit' is deprecated. Overrides deprecated member in 'androidx.activity.ComponentActivity'. Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        super.onActivityResult(requestCode, resultCode, resultData)
-
-        val uri = resultData?.data
-        when (requestCode) {
-            saveCode -> {
-                if (uri != null) {
-                    //TODO!+ Handle FileNotFoundException and IOException
-                    val contentResolver = applicationContext.contentResolver
-                    val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "w")
-                    val fos = FileOutputStream(parcelFileDescriptor?.fileDescriptor)
-                    val dataBytes = gameViewModel.getGameState().serialize()
-                        .toByteArray()  // Maybe I should serialize to bytes straight away...
-                    fos.write(dataBytes)
-                }
-            }
-            loadCode -> {
-                if (uri != null) {
-                    val contentResolver = applicationContext.contentResolver
-                    val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
-                    val fis = FileInputStream(parcelFileDescriptor?.fileDescriptor)
-                    val byteArray = fis.readBytes()
-                    val str = String(byteArray)
-                    //TODO!+ Make de-serializing a GameState a static method...
-                    val dummyGameState = GameState(mutableMapOf(),0)
-                    val readGameState = dummyGameState.deserialize(str)
-                    gameViewModel.setGameState(readGameState)
-
-                    updateView()
-                    showWinningBanner(false) //TODO?~ Shouldn't this be determined elsewhere...?
-                }
-
-            }
+            //TODO!+  parcelFileDescriptor?.close()
         }
-
     }
 
     private fun undo() {
