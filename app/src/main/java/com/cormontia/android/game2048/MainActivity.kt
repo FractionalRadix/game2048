@@ -14,6 +14,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
 import com.cormontia.android.game2048.contracts.LoaderContract
 import com.cormontia.android.game2048.contracts.SaverContract
+import com.cormontia.android.game2048.contracts.SharerContract
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import kotlin.math.abs
@@ -28,10 +29,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameBoardView: GameBoardView
     private lateinit var mGestureDetector: GestureDetectorCompat
 
-    //TODO?+ Implement Share buttons? Or drop it?
-
     private val loadLauncher = registerForActivityResult(LoaderContract()) { uri -> load(uri) }
     private val saveLauncher = registerForActivityResult(SaverContract()) { uri -> save(uri) }
+    private val shareLauncher = registerForActivityResult(SharerContract()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.redoButton).setOnClickListener{ redo() }
         findViewById<ImageButton>(R.id.saveButton).setOnClickListener { saveLauncher.launch("dummy") }
         findViewById<ImageView>(R.id.loadButton).setOnClickListener { loadLauncher.launch("dummy") }
+        findViewById<ImageView>(R.id.shareButton).setOnClickListener { shareLauncher.launch(gameViewModel.getGameState().serialize()) }
 
         updateView()
     }
@@ -107,10 +108,6 @@ class MainActivity : AppCompatActivity() {
     private fun redo() {
         gameViewModel.redo()
         updateView()
-    }
-
-    fun share() {
-        TODO()
     }
 
     // Gesture detection

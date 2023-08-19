@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
         />
         <ImageButton
-            android:id="@+id/Share"
+            android:id="@+id/shareButton"
             android:src="@drawable/baseline_share_24"
             android:contentDescription="@string/share"
 
