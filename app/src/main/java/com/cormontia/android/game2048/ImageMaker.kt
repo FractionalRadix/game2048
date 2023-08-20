@@ -37,14 +37,11 @@ class ImageMaker {
             // Saving the old way (using the deprecated "insertImage") or the new way.
             // https://stackoverflow.com/a/66817176/812149
 
+            val filename = "2048_${System.currentTimeMillis()}"
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                //TODO!~ Do something about the title.
-                // Right now it sends the image as "Title.jpg", then "Title(1).jpg", etc.
-                return saveImageInQ(context, bitmap, "Title")
+                return saveImageInQ(context, bitmap, filename)
             } else {
-                //TODO!~ Do something about the title.
-                // Right now it sends the image as "Title.jpg", then "Title(1).jpg", etc.
-                return saveImageInLegacy(context, bitmap, "Title")
+                return saveImageInLegacy(context, bitmap, filename)
             }
         }
 
