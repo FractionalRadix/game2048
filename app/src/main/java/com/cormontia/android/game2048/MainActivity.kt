@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             val dummyGameState = GameState(mutableMapOf(),0)
             val readGameState = dummyGameState.deserialize(str)
             gameViewModel.setGameState(readGameState)
-            //TODO!+  parcelFileDescriptor?.close()
+            parcelFileDescriptor?.close()
 
             updateView()
             showWinningBanner(false) //TODO?~ Shouldn't this be determined elsewhere...?
@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                 .toByteArray()  // Maybe I should serialize to bytes straight away...
             fos.write(dataBytes)
 
-            //TODO!+  parcelFileDescriptor?.close()
+            parcelFileDescriptor?.close()
         }
     }
 
