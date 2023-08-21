@@ -66,45 +66,6 @@ class GameViewModel : ViewModel() {
             return shiftedRow
         }
 
-        //TODO?~ Do I really want the new "shiftAndCollapse" to shift-and-collapse IN-PLACE?
-        //NOTE: this one works SOMEWHAT, it doesn't handle gaps.
-        fun OLD_shiftAndCollapse(list: FieldList): FieldList {
-            // The following works but only shifts the list by ONE!
-            for (i in 1 until list.length) {
-                if (list[i] == null) {
-                    list[i] = list[i + 1]
-                    list[i + 1] = null
-                } else if (list[i] == list[i + 1]) {
-                    list[i] = 2 * list[i]!!
-                    list[i + 1] = null
-                }
-
-                //TODO!+ To make this effective, you should now check how many empty fields there are.
-                // And shift by THAT length ("i + gapSize") instead of 1 ("i + 1")
-                //   TEST: 8,_,_,_,16 should become 8,16
-                // gapSize should be 3.
-
-            }
-
-            return list
-        }
-
-        fun shiftAndCollapse(list: FieldList): FieldList {
-            val gaps = list.determineGaps()
-
-            //TODO!+ Now that you know the gaps, shift over them.
-            // And keep in mind to merge blocks if they have the same value.
-            // Well, let's first just empty the gaps.
-
-            // Suppose we have [2,_,_,4].
-            // This is a single gap, (2,3).
-            // So, everything after 3 must be shifted by the size of this gap.
-
-            TODO()
-
-            return list
-        }
-
         /**
          * Transform a row or column according to the rules of 2048.
          * For ease of understanding, assume that the input is a row, and that we're shifting it to the right.

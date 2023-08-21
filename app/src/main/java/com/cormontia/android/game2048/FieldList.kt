@@ -1,143 +1,55 @@
 package com.cormontia.android.game2048
 
-interface FieldList {
-    val length: Int
-    operator fun set(index: Int, value: Int?)
-    operator fun get(index: Int): Int?
+class FieldList {
 
-    /**
-     * Find the index of the first empty cell in the list, starting from (including) `start`.
-     * For example, if the (1-based) list is [2,_,2,_,_,8] then firstEmptyCell(3) will return 4, and firstEmptyCell(5) will return 5.
-     * @return The index of the first empty cell from `start`, or the length of the list if there is no such cell.
-     */
-    fun firstEmptyCellFrom(start: Int): Int {
-        var idx = start
-        while (idx <= this.length && this[idx] != null)
-            idx++
-        return idx
+    //TODO!~ Use this for the  "shift-and-collapse" functionality.
+    // That way we can give our rows and columns any (constant) length that we desire.
+
+    //TODO?~ Make static?
+    //TODO?+ Let it return if the output differs from the input? (Caller can also check that now...)
+    fun shiftAndCollapse(l: List<Int?>): List<Int?> {
+        val stateMachine = StateMachine()
+
+        val result = l
+            .filterNotNull()
+            .mapNotNull { stateMachine.receive(it) }
+            .toMutableList() as MutableList<Int?>
+        result.add(stateMachine.finish())
+
+        val inputLength = l.size
+        val resultLength = result.size
+        repeat(inputLength - resultLength) { result.add(null) }
+
+        return result
     }
 
-    /**
-     * Find the index of first non-empty cell in the list, starting from (including) `start`.
-     * For example, if the (1-based) list is [2,_,8,4,_,8] then firstNonEmptyCell(1) will return 1, firstNonEmptyCell(4) will return 4.
-     */
-    fun firstNonEmptyCellFrom(start: Int): Int {
-        var idx = start
-        while (idx <= this.length && this[idx] == null) {
-            idx++
-        }
-        return idx
-    }
+    class StateMachine() {
+        private var state: Int? = null
+        private var finished = false
 
-    /**
-     * Determine the ranges of empty cells in the list.
-     * For example, the 1-based list [_,_,_,4,4,_] will yield [(1,3),(6,6)]
-     * @return A list of IntRanges, where each IntRange corresponds to a series of 1 or more consecutive empty cells.
-     */
-    fun determineGaps(): List<IntRange> {
-        val gaps = mutableListOf<IntRange>()
-
-        var nextIdx = 1
-        do {
-            val startOfGap = firstEmptyCellFrom(nextIdx)
-            if (startOfGap <= this.length) {
-                val endOfGap = firstNonEmptyCellFrom(startOfGap) - 1
-                gaps.add(IntRange(startOfGap, endOfGap))
-                nextIdx = endOfGap + 2 // endOfGap + 1 is the non-empty cell, so the first candidate for the next EMPTY  cell is endOfGap + 2
+        fun receive(n: Int): Int? {
+            if (finished) {
+                return null
             }
 
-        } while (startOfGap <= this.length && nextIdx <= this.length)
-
-        return gaps
-    }
-
-    /**
-     * Move elements in this list backwards (towards lower indices).
-     * Starting at position `startOfShift`,
-     * For example, backShift(5,2) on [8,8,_,_,3,1,4] results in [8,8,3,1,4,_,_]
-     */
-    fun backShift(startOfShift: Int, amountOfShift: Int) {
-        for (idx in startOfShift .. length) {
-            this[idx - amountOfShift] = this[idx]
+            if (state == null) {
+                state = n
+                return null
+            } else {
+                if (state == n) {
+                    state = null
+                    return 2 * n
+                } else {
+                    val oldState = state
+                    state = n
+                    return oldState
+                }
+            }
         }
-        for (idx in 0 until amountOfShift) {
-            this[length - idx] = null
+
+        fun finish(): Int? {
+            finished = true
+            return state
         }
-    }
-
-    /**
-     * Given a list, determine if its contents is the same as this FieldList.
-     * @return <code>true</code> if and only if the contents of the two lists is the same.
-     */
-    fun equal(list: List<Int?>): Boolean {
-        if (list.size != this.length)
-            return false
-        for (idx in 1..length) {
-            if (this[idx] != list[idx - 1])
-                return false
-        }
-        return true
-    }
-
-}
-
-class RowFieldList(private val gameState: GameState, private val rowIdx: Int, override val length: Int) : FieldList {
-
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(rowIdx, index)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(rowIdx, index)]
-    }
-}
-
-class ReverseRowFieldList(private val gameState: GameState, private val rowIdx: Int, override val length: Int) : FieldList {
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(rowIdx, 5 - index)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(rowIdx, 5 - index)]
-    }
-}
-
-class ColumnList(private val gameState: GameState, private val colIdx: Int, override val length: Int): FieldList {
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(index, colIdx)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(index, colIdx)]
-    }
-}
-
-class ReverseColumnList(private val gameState: GameState, private val colIdx: Int, override val length: Int): FieldList {
-    override fun set(index: Int, value: Int?) {
-        val idx = Coor(length + 1 - index, colIdx)
-        if (value == null) {
-            gameState.state.remove(idx)
-        } else {
-            gameState.state[idx] = value
-        }
-    }
-
-    override fun get(index: Int): Int? {
-        return gameState.state[Coor(length + 1 - index, colIdx)]
     }
 }
