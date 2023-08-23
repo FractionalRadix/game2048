@@ -118,20 +118,19 @@ class GameStateTests {
         //    | 2    | null |  4 |  4    | null |
         //    | null |  3   |  8 |  null | 2    |
         // We deliberately enter these NOT in order, to test if the sorting works!
-        // Then we filter second row (0-based, so the one with index 1).
+        // Then we filter second row (1-based, so the row with index 2).
         // The method should result in a list: [3,8,2]
-        val r0c0 = Coor(0,0)
-        val fields = mutableMapOf<Coor,Int>(
-            Coor(0, 0) to 2,
-            Coor(0, 3) to 4,
-            Coor(1, 1) to 3,
-            Coor(0, 2) to 4,
-            Coor(1, 4) to 2,
-            Coor(1, 2) to 8,
+        val fields = mutableMapOf(
+            Coor(1, 0) to 2,
+            Coor(1, 3) to 4,
+            Coor(2, 1) to 3,
+            Coor(1, 2) to 4,
+            Coor(2, 4) to 2,
+            Coor(2, 2) to 8,
         )
         val gameState = GameState(fields, 0)
 
-        val actual = gameState.getRowAsFilteredList(1)
+        val actual = gameState.getRowAsFilteredList(2)
         val expected = listOf(3,8,2)
 
         assertEquals(expected, actual)

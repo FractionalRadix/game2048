@@ -290,11 +290,14 @@ class GameViewModel : ViewModel() {
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
     fun right_using_FieldList(): MoveResult {
+        val nrOfRows = 4    //TODO!~ Must become a property of GameState.
+        val nrOfColumns = 4 //TODO!~ Must become a property of GameState.
+
         var changeOccurred = false;
         val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0
+        var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
 
-        for (rowIdx in 1 .. 4) {
+        for (rowIdx in 1 .. nrOfRows) {
             val row = currentGameState.getRowAsFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first.filterNotNull()
@@ -302,7 +305,17 @@ class GameViewModel : ViewModel() {
                 changeOccurred = true
             }
             currentGameState.score += shiftAndCollapseResult.second
-            //TODO!+
+
+            // Remove the old row.
+            currentGameState.state.keys.removeIf { it.row == rowIdx }
+            // Insert the transformed row.
+            //TODO!+ Add tests! Check for off-by-one error since these arrays are ONE-based instead of ZERO-based!
+            val startPos = nrOfColumns - shiftedRow.size
+            for (colIdx in startPos .. nrOfColumns) {
+                val value = shiftedRow[colIdx - startPos]
+                currentGameState.state.put(Coor(rowIdx, colIdx), value)
+            }
+
         }
         //TODO!+
         TODO()

@@ -7,8 +7,7 @@ class FieldListTests {
     fun testShiftAndCollapse_shiftWithoutDoubling() {
         // _,4,16,_ becomes 4,16,_,_
         val input = listOf(null,4,16,null)
-        //val output = GameViewModel.StaticMethods.shiftAndCollapse(input)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(4,16,null,null)))
 
         // We CAN use "equals" for lists...! https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-abstract-list/equals.html
@@ -24,7 +23,7 @@ class FieldListTests {
     fun testShiftAndCollapse_simpleShiftAndDoubling() {
         // 2,2,_,_ becomes 4,_,_,_
         val input = listOf(2,2,null,null)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(4,null,null,null)))
 
         /*
@@ -39,7 +38,7 @@ class FieldListTests {
     fun testShiftAndCollapse_fieldOnlyAddedOnce() {
         // 2,2,2,_ becomes 2,4,_,_
         val input = listOf(2,2,2,null)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(4,2,null,null)))
 
         /*
@@ -54,7 +53,7 @@ class FieldListTests {
     fun testShiftAndCollapse_fieldsWithDistanceBetweenThemCollapseIntoOne() {
         // 4,_,_,4 becomes 8,_,_,_
         val input = listOf(4,null,null,4)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(8, null, null, null)))
 
         /*
@@ -69,7 +68,7 @@ class FieldListTests {
     fun testShiftAndCollapse_fourTwosBecomeTwoFours() {
         // 2,2,2,2 becomes 4,4,_,_
         val input = listOf(2,2,2,2)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(4,4,null,null)))
 
         /*
@@ -85,7 +84,7 @@ class FieldListTests {
     @Test
     fun testShiftAndCollapse_fieldsOnlyCollapseOnce() {
         val input = listOf(2,2,4,null)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(4,4,null,null)))
 
         /*
@@ -99,14 +98,14 @@ class FieldListTests {
     @Test
     fun testAllNullsYieldsEquallyManyNulls() {
         val input = listOf(null, null, null, null)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(null,null,null,null)))
     }
 
     @Test
     fun testLongerShiftAndCollapse() {
         val input = mutableListOf(8,8,null,null,3,1,4)
-        val output = FieldList().shiftAndCollapse(input)
+        val output = FieldList.shiftCollapseAndCalculateScore(input).first
         assert(output.equals(listOf(16,3,1,4,null,null, null)))
 
         //on [8,8,_,_,3,1] results in [16,3,1,_,_,_]
