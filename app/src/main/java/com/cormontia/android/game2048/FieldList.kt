@@ -9,33 +9,34 @@ class FieldList {
     //TODO?+ Let it return if the output differs from the input? (Caller can also check that now...)
     companion object {
 
-        fun shiftCollapseAndCalculateScore(l: List<Int?>) : Pair<List<Int?>, Int> {
+        fun shiftCollapseAndCalculateScore(l: List<Int>) : Pair<List<Int>, Int> {
             val shiftedRow = shiftAndCollapse(l)
             val score = calculateScore(l)
             return Pair(shiftedRow, score)
         }
 
-        private fun shiftAndCollapse(l: List<Int?>): List<Int?> {
+        private fun shiftAndCollapse(l: List<Int>): List<Int> {
             val stateMachine = StateMachine()
 
             val result = l
-                .filterNotNull()
+                //.filterNotNull()
                 .mapNotNull { stateMachine.receive(it) }
                 .toMutableList() as MutableList<Int?>
             result.add(stateMachine.finish())
 
             //TODO?~ We may not need this HERE.
-            val inputLength = l.size
-            val resultLength = result.size
-            repeat(inputLength - resultLength) { result.add(null) }
+            //val inputLength = l.size
+            //val resultLength = result.size
+            //repeat(inputLength - resultLength) { result.add(null) }
 
             return result
+                .filterNotNull() //TODO?- added while trying to make this thing work on List<Int> instead of List<Int?>
         }
 
         //TODO?~ Add unit test?
-        private fun calculateScore(l: List<Int?>) = l
+        private fun calculateScore(l: List<Int>) = l
                 .asSequence()
-                .filterNotNull()
+                //.filterNotNull()
                 .windowed(2,1)
                 .filter { it[0] == it[1] }
                 .map { it[0] + it[1] }
