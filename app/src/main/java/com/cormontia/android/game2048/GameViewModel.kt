@@ -285,6 +285,30 @@ class GameViewModel : ViewModel() {
     }
 
     /**
+     * Adjust the game board if the player moves values to the right.
+     * Using the new "FieldList" interface.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
+     */
+    fun right_using_FieldList(): MoveResult {
+        var changeOccurred = false;
+        val cachedGameState = currentGameState.deepCopy()
+        var highestNewValue = 0
+
+        for (rowIdx in 1 .. 4) {
+            val row = currentGameState.getRowAsFilteredList(rowIdx)
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
+            val shiftedRow = shiftAndCollapseResult.first.filterNotNull()
+            if (row != shiftedRow) {
+                changeOccurred = true
+            }
+            currentGameState.score += shiftAndCollapseResult.second
+            //TODO!+
+        }
+        //TODO!+
+        TODO()
+    }
+
+    /**
      * Adjust the game board if the player moves values to the left.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
