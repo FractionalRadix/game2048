@@ -293,14 +293,14 @@ class GameViewModel : ViewModel() {
         val nrOfRows = 4    //TODO!~ Must become a property of GameState.
         val nrOfColumns = 4 //TODO!~ Must become a property of GameState.
 
-        var changeOccurred = false;
+        var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
 
         for (rowIdx in 1 .. nrOfRows) {
             val row = currentGameState.getRowAsFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
-            val shiftedRow = shiftAndCollapseResult.first.filterNotNull()
+            val shiftedRow = shiftAndCollapseResult.first
             if (row != shiftedRow) {
                 changeOccurred = true
             }
@@ -452,7 +452,8 @@ class GameViewModel : ViewModel() {
         history.add(gameState) // We don't need to deepCopy(), it already IS a deepCopy().
         historyIndex++
 
-        Log.i("2048-game", "History file: ${historyIndex}/${history.size}")
-        Log.i("2048-game", "...last element: $gameState")
+        //TODO?+ Commented out so I don't have to mock them in the unit test.
+        //Log.i("2048-game", "History file: ${historyIndex}/${history.size}")
+        //Log.i("2048-game", "...last element: $gameState")
     }
 }
