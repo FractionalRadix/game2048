@@ -298,6 +298,8 @@ class GameViewModel : ViewModel() {
         var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
 
         for (rowIdx in 1 .. nrOfRows) {
+
+            // Determine the new row. Note if it is different from the old one, and maintain the score.
             val row = currentGameState.getRowAsFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
@@ -308,17 +310,20 @@ class GameViewModel : ViewModel() {
 
             // Remove the old row.
             currentGameState.state.keys.removeIf { it.row == rowIdx }
+
             // Insert the transformed row.
             //TODO!+ Add tests! Check for off-by-one error since these arrays are ONE-based instead of ZERO-based!
-            val startPos = nrOfColumns - shiftedRow.size
-            for (colIdx in startPos .. nrOfColumns) {
+            val startPos = nrOfColumns - shiftedRow.size // E.g. _,_,4,8: 4 - 2 = 2
+            for (colIdx in startPos until nrOfColumns) {   // In our example, 2 <= colIdx < 4
                 val value = shiftedRow[colIdx - startPos]
-                currentGameState.state.put(Coor(rowIdx, colIdx), value)
+                currentGameState.state.put(Coor(rowIdx, colIdx + 1), value)
             }
 
         }
-        //TODO!+
-        TODO()
+
+        //TODO?+
+
+        return MoveResult(changeOccurred, highestNewValue)
     }
 
     /**

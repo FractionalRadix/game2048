@@ -21,8 +21,8 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
 
-        viewModel.right()
-        //viewModel.right_using_FieldList()
+        //viewModel.right()
+        viewModel.right_using_FieldList()
 
 
         val outputGameState = viewModel.getGameState()
@@ -34,7 +34,7 @@ class GameViewModelTest {
         val actualRow2 = outputGameState.getRow(2)
         assert(actualRow2.size == 3)
         assert(actualRow2.containsEntry(2, 2))
-        assert(actualRow2.containsEntry(3,8))
+        assert(actualRow2.containsEntry(3, 8))
         assert(actualRow2.containsEntry(4, 8))
 
         assert(outputGameState.score == 12)
