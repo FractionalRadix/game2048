@@ -22,7 +22,7 @@ class GameViewModelTest {
 
 
         //viewModel.right()
-        viewModel.right_using_FieldList()
+        viewModel.moveRightNewImplementation()
 
 
         val outputGameState = viewModel.getGameState()

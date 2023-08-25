@@ -18,6 +18,10 @@ class GameViewModel : ViewModel() {
     private var history = mutableListOf<GameState>()
     private var historyIndex = 0
 
+
+    private val nrOfRows = 4 //TODO!~ Must become a property of GameState.
+    private val nrOfColumns = 4 //TODO!~ Must become a property of GameState.
+
     /**
      * Check if the game has only just started, or if `init` is called due to an orientation change.
      */
@@ -289,9 +293,7 @@ class GameViewModel : ViewModel() {
      * Using the new "FieldList" interface.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun right_using_FieldList(): MoveResult {
-        val nrOfRows = 4    //TODO!~ Must become a property of GameState.
-        val nrOfColumns = 4 //TODO!~ Must become a property of GameState.
+    fun moveRightNewImplementation(): MoveResult {
 
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
@@ -312,16 +314,59 @@ class GameViewModel : ViewModel() {
             currentGameState.state.keys.removeIf { it.row == rowIdx }
 
             // Insert the transformed row.
-            //TODO!+ Add tests! Check for off-by-one error since these arrays are ONE-based instead of ZERO-based!
-            val startPos = nrOfColumns - shiftedRow.size // E.g. _,_,4,8: 4 - 2 = 2
-            for (colIdx in startPos until nrOfColumns) {   // In our example, 2 <= colIdx < 4
+            val startPos = nrOfColumns - shiftedRow.size
+            for (colIdx in startPos until nrOfColumns) {
                 val value = shiftedRow[colIdx - startPos]
                 currentGameState.state.put(Coor(rowIdx, colIdx + 1), value)
             }
 
+            if (changeOccurred) {
+                updateHistory(cachedGameState)
+            }
         }
 
-        //TODO?+
+        return MoveResult(changeOccurred, highestNewValue)
+    }
+
+    //TODO!~ Get the parts in move[Right|Left|Up|Down] that differ, and use function parameters for these.
+    //  Ultimately we want a generic "move(d: Direction)" method, where Direction is an enum containing Left, Right, Up, and Down.
+
+    /**
+     * Adjust the game board if the player moves values to the left.
+     * Using the new "FieldList" interface.
+     * @return <code>true</code> if and only if this move caused a change in the game board.
+     */
+    fun moveLeftNewImplementation(): MoveResult {
+
+        var changeOccurred = false
+        val cachedGameState = currentGameState.deepCopy()
+        var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
+
+        for (rowIdx in 1 .. nrOfRows) {
+
+            // Determine the new row. Note if it is different from the old one, and maintain the score.
+            val row = currentGameState.getRowAsBackwardFilteredList(rowIdx)
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
+            val shiftedRow = shiftAndCollapseResult.first
+            if (row != shiftedRow) {
+                changeOccurred = true
+            }
+            currentGameState.score += shiftAndCollapseResult.second
+
+            // Remove the old row.
+            currentGameState.state.keys.removeIf { it.row == rowIdx }
+
+            // Insert the transformed row.
+            //TODO!+ Unit tests!
+            for (colIdx in shiftedRow.indices) {
+                val value = shiftedRow[colIdx]
+                currentGameState.state.put(Coor(rowIdx, colIdx + 1), value)
+            }
+
+            if (changeOccurred) {
+                updateHistory(cachedGameState)
+            }
+        }
 
         return MoveResult(changeOccurred, highestNewValue)
     }

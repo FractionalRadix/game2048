@@ -22,14 +22,6 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
         .map { Pair(it.key.col, it.value) }
         .toMap()
 
-    fun getRowAsFilteredList(rowIdx: Int) : List<Int> {
-        return state
-            .filterKeys { it.row == rowIdx }
-            .toSortedMap( compareBy { it.col } )
-            .map { it.value }
-    }
-
-
     /**
      * Given a column index, return a mapping from its row numbers to its contents.
      * For example, if the 3th column reads "2,4,_,2", then `getColumn(3)` will return the map { 1 -> 2, 2 -> 4, 4 -> 2 }.
@@ -40,6 +32,34 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
         .filterKeys { it.col == colIdx }
         .map { Pair(it.key.row, it.value) }
         .toMap()
+
+    fun getRowAsFilteredList(rowIdx: Int) : List<Int> {
+        return state
+            .filterKeys { it.row == rowIdx }
+            .toSortedMap( compareBy { it.col } )
+            .map { it.value }
+    }
+
+    fun getRowAsBackwardFilteredList(rowIdx: Int) : List<Int> {
+        return state
+            .filterKeys { it.row == rowIdx }
+            .toSortedMap( compareByDescending { it.col } )
+            .map { it.value }
+    }
+
+    fun getColumnAsFilteredList(colIdx: Int) : List<Int> {
+        return state
+            .filterKeys { it.col == colIdx }
+            .toSortedMap( compareBy { it.row } )
+            .map { it.value }
+    }
+
+    fun getColumnAsReverseFilteredList(colIdx: Int) : List<Int> {
+        return state
+            .filterKeys { it.col == colIdx }
+            .toSortedMap( compareByDescending { it.row } )
+            .map { it.value }
+    }
 
     //TODO!~ Either list "null" as "null" instead of "0", or don't make this an override of toString().
     // Right now it is confusing.
