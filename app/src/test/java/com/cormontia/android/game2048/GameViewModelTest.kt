@@ -20,10 +20,7 @@ class GameViewModelTest {
         val inputGameState = GameState(values,0)
         viewModel.setGameState(inputGameState)
 
-
-        //viewModel.right()
         viewModel.moveRightNewImplementation()
-
 
         val outputGameState = viewModel.getGameState()
 
@@ -40,7 +37,38 @@ class GameViewModelTest {
         assert(outputGameState.score == 12)
     }
 
-    //TODO!~ Make more generic, and move to a utilities "class"...
+    @Test
+    fun left_shift_collapses_doubles_and_gives_score() {
+        // Test that (_,_,2,2) and (8,4,4,2) gives (4,_,_,_) and (8,8,2,_), and scores 12 points.
+        val values = mutableMapOf(
+            Coor(1, 3) to 2,
+            Coor(1, 4) to 2,
+            Coor(2, 1) to 8,
+            Coor(2, 2) to 4,
+            Coor(2, 3) to 4,
+            Coor(2, 4) to 2,
+        )
+        val inputGameState = GameState(values,0)
+        viewModel.setGameState(inputGameState)
+
+        viewModel.moveLeftNewImplementation()
+
+        val outputGameState = viewModel.getGameState()
+
+        val actualRow1 = outputGameState.getRow(1)
+        assert(actualRow1.size == 1)
+        assert(actualRow1.containsEntry(1, 4))
+
+        val actualRow2 = outputGameState.getRow(2)
+        assert(actualRow2.size == 3)
+        assert(actualRow2.containsEntry(1, 8))
+        assert(actualRow2.containsEntry(2, 8))
+        assert(actualRow2.containsEntry(3, 2))
+
+        assert(outputGameState.score == 12)
+    }
+
+        //TODO!~ Make more generic, and move to a utilities "class"...
     // (Might not even put it in a separate class, to make it widely available).
     private fun Map<Int,Int>.containsEntry(key: Int, value: Int) : Boolean {
         if (!this.containsKey(key))

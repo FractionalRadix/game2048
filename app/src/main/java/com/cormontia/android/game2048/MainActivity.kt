@@ -172,11 +172,13 @@ class MainActivity : AppCompatActivity() {
     //  These are both called from the gesture detector, and wired to the buttons.
 
     private fun right() {
-        move(fun() = gameViewModel.right())
+        //move(fun() = gameViewModel.right())
+        move(fun() = gameViewModel.moveRightNewImplementation())
     }
 
     private fun left() {
-        move(fun() = gameViewModel.left())
+        //move(fun() = gameViewModel.left())
+        move(fun() = gameViewModel.moveLeftNewImplementation())
     }
 
     private fun up() {

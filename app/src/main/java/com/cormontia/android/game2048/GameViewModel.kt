@@ -357,10 +357,9 @@ class GameViewModel : ViewModel() {
             currentGameState.state.keys.removeIf { it.row == rowIdx }
 
             // Insert the transformed row.
-            //TODO!+ Unit tests!
             for (colIdx in shiftedRow.indices) {
                 val value = shiftedRow[colIdx]
-                currentGameState.state.put(Coor(rowIdx, colIdx + 1), value)
+                currentGameState.state.put(Coor(rowIdx, shiftedRow.size - colIdx), value)
             }
 
             if (changeOccurred) {
