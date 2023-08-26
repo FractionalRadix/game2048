@@ -11,7 +11,7 @@ class GameViewModelTest {
     // That way we can use the same unit tests for both.
     class ViewModelProxy {
         private val viewModel = GameViewModel()
-        private val oldSystem = true
+        private val oldSystem = false
 
         fun right() = if (oldSystem) { viewModel.right() } else { viewModel.moveRightNewImplementation() }
         fun left() = if (oldSystem) { viewModel.left() } else { viewModel.moveLeftNewImplementation() }

@@ -302,7 +302,7 @@ class GameViewModel : ViewModel() {
         for (rowIdx in 1 .. nrOfRows) {
 
             // Determine the new row. Also maintain the score.
-            val row = currentGameState.getRowAsFilteredList(rowIdx)
+            val row = currentGameState.getRowAsBackwardFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
             currentGameState.score += shiftAndCollapseResult.second
@@ -311,9 +311,11 @@ class GameViewModel : ViewModel() {
             currentGameState.state.keys.removeIf { it.row == rowIdx }
 
             // Insert the transformed row.
+            val revertedShiftedRow = shiftedRow.reversed()
             val startPos = nrOfColumns - shiftedRow.size
             for (colIdx in startPos until nrOfColumns) {
-                val value = shiftedRow[colIdx - startPos]
+                //val value = shiftedRow[colIdx - startPos]
+                val value = revertedShiftedRow[colIdx - startPos]
                 val coor = Coor(rowIdx, colIdx + 1)
                 currentGameState.state[coor] = value
             }
@@ -359,8 +361,8 @@ class GameViewModel : ViewModel() {
         for (rowIdx in 1 .. nrOfRows) {
 
             // Determine the new row. Note if it is different from the old one, and maintain the score.
-            val row = currentGameState.getRowAsBackwardFilteredList(rowIdx)
-            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
+            val row = currentGameState.getRowAsFilteredList(rowIdx) // For example, [2,2,8,4,8,8]
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)  // Our example becomes [4,8,4,16]
             val shiftedRow = shiftAndCollapseResult.first
             currentGameState.score += shiftAndCollapseResult.second
 
@@ -370,7 +372,7 @@ class GameViewModel : ViewModel() {
             // Insert the transformed row.
             for (colIdx in shiftedRow.indices) {
                 val value = shiftedRow[colIdx]
-                val coor = Coor(rowIdx, shiftedRow.size - colIdx)
+                val coor = Coor(rowIdx, colIdx + 1)     // Our example becomes: col[0] -> 4, col[1] -> 8, col[2] -> 4, col[3] -> 16.
                 currentGameState.state[coor] = value
             }
 
