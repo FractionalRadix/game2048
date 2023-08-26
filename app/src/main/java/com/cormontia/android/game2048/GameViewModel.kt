@@ -297,17 +297,14 @@ class GameViewModel : ViewModel() {
 
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
+        var highestNewValue = 0
 
         for (rowIdx in 1 .. nrOfRows) {
 
-            // Determine the new row. Note if it is different from the old one, and maintain the score.
+            // Determine the new row. Also maintain the score.
             val row = currentGameState.getRowAsFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
-            if (row != shiftedRow) {
-                changeOccurred = true
-            }
             currentGameState.score += shiftAndCollapseResult.second
 
             // Remove the old row.
@@ -317,12 +314,30 @@ class GameViewModel : ViewModel() {
             val startPos = nrOfColumns - shiftedRow.size
             for (colIdx in startPos until nrOfColumns) {
                 val value = shiftedRow[colIdx - startPos]
-                currentGameState.state.put(Coor(rowIdx, colIdx + 1), value)
+                val coor = Coor(rowIdx, colIdx + 1)
+                currentGameState.state[coor] = value
             }
 
-            if (changeOccurred) {
-                updateHistory(cachedGameState)
+            //TODO!+ Add a unit test - "changeOccurred" should become true even if NO blocks get merged.
+            //TODO?~ Maybe this could be done at a later stage.
+            // Check if the new row is different from the original row.
+            val originalRow = cachedGameState.getRow(rowIdx)
+            val newRow = currentGameState.getRow(rowIdx)
+            changeOccurred = changeOccurred || equal(originalRow, newRow)
+
+            //TODO!+ Make this robust against empty lists.
+            /*
+            val highestOriginalValue = originalRow.maxOf { it.value }
+            val highestUpdatedValue = newRow.maxOf { it.value }
+            if (highestUpdatedValue > highestOriginalValue && highestUpdatedValue > highestNewValue) {
+                highestNewValue = highestUpdatedValue
             }
+             */
+
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
         }
 
         return MoveResult(changeOccurred, highestNewValue)
@@ -348,9 +363,6 @@ class GameViewModel : ViewModel() {
             val row = currentGameState.getRowAsBackwardFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
-            if (row != shiftedRow) {
-                changeOccurred = true
-            }
             currentGameState.score += shiftAndCollapseResult.second
 
             // Remove the old row.
@@ -359,12 +371,29 @@ class GameViewModel : ViewModel() {
             // Insert the transformed row.
             for (colIdx in shiftedRow.indices) {
                 val value = shiftedRow[colIdx]
-                currentGameState.state.put(Coor(rowIdx, shiftedRow.size - colIdx), value)
+                val coor = Coor(rowIdx, shiftedRow.size - colIdx)
+                currentGameState.state[coor] = value
             }
 
-            if (changeOccurred) {
-                updateHistory(cachedGameState)
+            //TODO!+ Add a unit test - "changeOccurred" should become true even if NO blocks get merged.
+            //TODO?~ Maybe this could be done at a later stage.
+            // Check if the new row is different from the original row.
+            val originalRow = cachedGameState.getRow(rowIdx)
+            val newRow = currentGameState.getRow(rowIdx)
+            changeOccurred = changeOccurred || equal(originalRow, newRow)
+
+            //TODO!+ Make this robust against empty lists.
+            /*
+            val highestOriginalValue = originalRow.maxOf { it.value }
+            val highestUpdatedValue = newRow.maxOf { it.value }
+            if (highestUpdatedValue > highestOriginalValue && highestUpdatedValue > highestNewValue) {
+                highestNewValue = highestUpdatedValue
             }
+             */
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
         }
 
         return MoveResult(changeOccurred, highestNewValue)

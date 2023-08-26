@@ -38,6 +38,39 @@ class GameViewModelTest {
     }
 
     @Test
+    fun a_change_is_noted_when_positions_change_even_if_there_are_no_collapses() {
+        // Testing with three consecutive numbers. A "null" in the fourth position is implied. (Does the system know that?)
+        val values = mutableMapOf(
+            Coor(1, 1) to 4,
+            Coor(1, 2) to 8,
+            Coor(1, 3) to 2,
+        )
+        val inputGameState = GameState(values,0)
+        viewModel.setGameState(inputGameState)
+
+        val res = viewModel.moveRightNewImplementation()
+
+        assert(res.changeOccurred)
+    }
+
+    @Test
+    fun a_change_is_noted_when_positions_change_even_if_there_are_no_collapses_2() {
+        // Same test, but now with a 'null' in the row.
+        val values = mutableMapOf(
+            Coor(1, 1) to 4,
+            Coor(1, 2) to 8,
+            Coor(1, 4) to 2,
+        )
+        val inputGameState = GameState(values,0)
+        viewModel.setGameState(inputGameState)
+
+        val res = viewModel.moveRightNewImplementation()
+
+        assert(res.changeOccurred)
+    }
+
+
+    @Test
     fun left_shift_collapses_doubles_and_gives_score() {
         // Test that (_,_,2,2) and (8,4,4,2) gives (4,_,_,_) and (8,8,2,_), and scores 12 points.
         val values = mutableMapOf(
