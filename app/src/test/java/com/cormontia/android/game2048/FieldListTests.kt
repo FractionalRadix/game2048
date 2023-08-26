@@ -41,35 +41,17 @@ class FieldListTests {
     @Test
     fun testShiftAndCollapse_fieldOnlyAddedOnce() {
         // 2,2,2,_ becomes 4,2,_,_
-        //val input = listOf(2,2,2,null)
         val input = listOf(2,2,2)
         val output = FieldList.shiftCollapseAndCalculateScore(input).first
-        //assert(output.equals(listOf(4,2,null,null)))
         assert(output.equals(listOf(4,2)))
-
-        /*
-        assert(output[1] == 4)
-        assert(output[2] == 2)
-        assert(output[3] == null)
-        assert(output[4] == null)
-         */
     }
 
     @Test
     fun testShiftAndCollapse_fieldsWithDistanceBetweenThemCollapseIntoOne() {
         // 4,_,_,4 becomes 8,_,_,_
-        //val input = listOf(4,null,null,4)
         val input = listOf(4,4)
         val output = FieldList.shiftCollapseAndCalculateScore(input).first
-        //assert(output.equals(listOf(8, null, null, null)))
         assert(output.equals(listOf(8)))
-
-        /*
-        assert(output[1] == 8)
-        assert(output[2] == null)
-        assert(output[3] == null)
-        assert(output[4] == null)
-         */
     }
 
     @Test
@@ -132,4 +114,5 @@ class FieldListTests {
         assert(list[6] == null)
          */
     }
+
 }

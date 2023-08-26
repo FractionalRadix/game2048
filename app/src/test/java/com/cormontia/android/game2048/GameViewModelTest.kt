@@ -6,17 +6,17 @@ class GameViewModelTest {
 
     //TODO?~ Move this inside the individual tests? Would be cleaner.
 
+    //TODO!- We don't need the proxy anymore.
     // Proxy class for GameViewModel, so we can easily change the SUT (System Under Test).
     // With a single flag, we can change between testing the old and the new implementations of the shift-and-collapse code.
     // That way we can use the same unit tests for both.
     class ViewModelProxy {
         private val viewModel = GameViewModel()
-        private val oldSystem = false
 
-        fun right() = if (oldSystem) { viewModel.right() } else { viewModel.moveRightNewImplementation() }
-        fun left() = if (oldSystem) { viewModel.left() } else { viewModel.moveLeftNewImplementation() }
-        fun up() = if (oldSystem) { viewModel.up() } else { viewModel.moveUpNewImplementation() }
-        fun down() = if (oldSystem) { viewModel.down() } else { viewModel.moveDownNewImplementation() }
+        fun right() = viewModel.moveRightNewImplementation()
+        fun left() = viewModel.moveLeftNewImplementation()
+        fun up() = viewModel.moveUpNewImplementation()
+        fun down() = viewModel.moveDownNewImplementation()
 
         fun setGameState(gameState: GameState) { viewModel.setGameState(gameState) }
         fun getGameState(): GameState { return viewModel.getGameState() }

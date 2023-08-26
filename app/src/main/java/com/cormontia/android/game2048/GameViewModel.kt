@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import java.util.*
 import kotlin.collections.HashMap
-import kotlin.math.max
 
 //TODO?~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
@@ -28,111 +27,6 @@ class GameViewModel : ViewModel() {
     private var startOfGame = true
 
     companion object StaticMethods {
-
-        fun shift(row: Map<Int, Int>): MutableMap<Int, Int> {
-            // Move all elements as far to the right as possible.
-            // Do NOT collapse anything.
-            val shiftedRow = mutableMapOf<Int,Int>()
-
-            row.forEach { shiftedRow[it.key] = it.value}
-
-            // First, move every field as far to the right as possible.
-            if (shiftedRow[4] == null) {
-                if (shiftedRow[3] != null) {
-                    shiftedRow[4] = shiftedRow[3]!!
-                    shiftedRow.remove(3)
-                } else if (shiftedRow[2] != null) {
-                    shiftedRow[4] = shiftedRow[2]!!
-                    shiftedRow.remove(2)
-                } else if (shiftedRow[1] != null) {
-                    shiftedRow[4] = shiftedRow[1]!!
-                    shiftedRow.remove(1)
-                }
-            }
-
-            if (shiftedRow[3] == null) {
-                if (shiftedRow[2] != null) {
-                    shiftedRow[3] = shiftedRow[2]!!
-                    shiftedRow.remove(2)
-                } else if (shiftedRow[1] != null) {
-                    shiftedRow[3] = shiftedRow[1]!!
-                    shiftedRow.remove(1)
-                }
-            }
-
-            if (shiftedRow[2] == null) {
-                if (shiftedRow[1] != null) {
-                    shiftedRow[2] = shiftedRow[1]!!
-                    shiftedRow.remove(1)
-                }
-            }
-
-            return shiftedRow
-        }
-
-        /**
-         * Transform a row or column according to the rules of 2048.
-         * For ease of understanding, assume that the input is a row, and that we're shifting it to the right.
-         * Each entry in the input maps a field in the row to its index.
-         * If a field does not have an entry then that field is empty.
-         * If two adjacent fields have the same value, they are collapsed into one that has the sum of their values.
-         * (E.g. 2,2,8,32 would become _,4,8,32).
-         *
-         * To use this to shift leftwards, simply reverse the row to transform, apply this function, then reverse it back.
-         * A similar thing applies to using this method for columns.
-         *
-         * @param row A mapping of row- or column indexes to field contents.
-         * @return A pair of elements.
-         * The first is a new row, where all elements are shifted as far to the highest position as possible, with adjacent equal fields collapsed int one.
-         * The second is the "score", the value of all elements that were merged, summed together.
-         */
-        fun shiftAndCollapse(row: Map<Int, Int>): ShiftAndCollapseResult {
-
-            var score = 0
-            var highestNewValue = 0
-
-            // First, shift all the elements as far to the end as you can.
-            var shiftedRow = shift(row)
-
-            // Second, if two adjacent fields have the same value, collapse them into one.
-            if (shiftedRow[4] != null && shiftedRow[4] == shiftedRow[3]) {
-                val sum = shiftedRow[4]!! + shiftedRow[3]!!
-                shiftedRow[4] = sum
-                shiftedRow.remove(3)
-                score += sum
-                highestNewValue = max(sum, highestNewValue)
-            }
-            if (shiftedRow[3] != null && shiftedRow[3] == shiftedRow[2]) {
-                val sum = shiftedRow[3]!! + shiftedRow[2]!!
-                shiftedRow[3] = sum
-                shiftedRow.remove(2)
-                score += sum
-                highestNewValue = max(sum, highestNewValue)
-            }
-            if (shiftedRow[2] != null && shiftedRow[2] == shiftedRow[1]) {
-                val sum = shiftedRow[2]!! + shiftedRow[1]!!
-                shiftedRow[2] = sum
-                shiftedRow.remove(1)
-                score += sum
-                highestNewValue = max(sum, highestNewValue)
-            }
-
-            shiftedRow = shift(shiftedRow)
-
-            return ShiftAndCollapseResult(shiftedRow, score, highestNewValue)
-        }
-
-        /**
-         * Given the values in a row or column, revert them.
-         * For example, [_,2,_,8] becomes [8,_,2_]
-         */
-        fun reverseRowOrColumn(list: Map<Int,Int>): Map<Int, Int> {
-            val reversedList = mutableMapOf<Int,Int>()
-            list.forEach {
-                reversedList[5-it.key] = it.value
-            }
-            return reversedList
-        }
 
         /**
          * Determine if two mappings from Int to Int, contain precisely the same mappings.
@@ -253,39 +147,6 @@ class GameViewModel : ViewModel() {
 
         // 3. If neither of these conditions hold, then the player has no more moves available.
         return false
-    }
-
-    /**
-     * Adjust the game board if the player moves values to the right.
-     * @return <code>true</code> if and only if this move caused a change in the game board.
-     */
-    fun right(): MoveResult {
-        var changeOccurred = false
-        val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0
-
-        for (rowIdx in 1..4) {
-            val row = currentGameState.getRow(rowIdx)
-            val shiftAndCollapseResult = shiftAndCollapse(row)
-            if (!equal(row, shiftAndCollapseResult.newRow)) {
-                changeOccurred = true
-            }
-            currentGameState.score += shiftAndCollapseResult.score
-            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
-
-            // Remove the old row.
-            currentGameState.state.keys.removeIf { it.row == rowIdx }
-            // Insert the transformed row.
-            for (elt in shiftAndCollapseResult.newRow) {
-                currentGameState.state[Coor(rowIdx, elt.key)] = elt.value
-            }
-        }
-
-        if (changeOccurred) {
-            updateHistory(cachedGameState)
-        }
-
-        return MoveResult(changeOccurred, highestNewValue)
     }
 
     /**
@@ -477,108 +338,6 @@ class GameViewModel : ViewModel() {
             }
         }
         return result
-    }
-
-    /**
-     * Adjust the game board if the player moves values to the left.
-     * @return <code>true</code> if and only if this move caused a change in the game board.
-     */
-    fun left(): MoveResult {
-        var changeOccurred = false
-        val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0
-
-        for (rowIdx in 1..4) {
-            val row = currentGameState.getRow(rowIdx)
-
-            val shiftAndCollapseResult = shiftAndCollapse(reverseRowOrColumn(row))
-            if (!equal(reverseRowOrColumn(row), shiftAndCollapseResult.newRow)) {
-                changeOccurred = true
-            }
-            currentGameState.score += shiftAndCollapseResult.score
-            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
-
-            // Remove the old row.
-            currentGameState.state.keys.removeIf { it.row == rowIdx }
-            // Insert the transformed row, but in reverse order.
-            for (elt in shiftAndCollapseResult.newRow) {
-                currentGameState.state[Coor(rowIdx, 5 - elt.key)] = elt.value
-            }
-        }
-
-        if (changeOccurred) {
-            updateHistory(cachedGameState)
-        }
-
-        return MoveResult(changeOccurred, highestNewValue)
-    }
-
-    /**
-     * Adjust the game board if the player moves values up.
-     * @return <code>true</code> if and only if this move caused a change in the game board.
-     */
-    fun up(): MoveResult {
-        var changeOccurred = false
-        val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0
-
-        for (colIdx in 1..4) {
-            val col = currentGameState.getColumn(colIdx)
-            val shiftAndCollapseResult = shiftAndCollapse(reverseRowOrColumn(col))
-
-            if (!equal(reverseRowOrColumn(col), shiftAndCollapseResult.newRow)) {
-                changeOccurred = true
-            }
-            currentGameState.score += shiftAndCollapseResult.score
-            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
-
-            // Remove the old column.
-            currentGameState.state.keys.removeIf { it.col == colIdx }
-            // Insert the transformed column, but in reverse order.
-            for (elt in shiftAndCollapseResult.newRow) {
-                currentGameState.state[Coor(5 - elt.key, colIdx)] = elt.value
-            }
-        }
-
-        if (changeOccurred) {
-            updateHistory(cachedGameState)
-        }
-
-        return MoveResult(changeOccurred, highestNewValue)
-    }
-
-    /**
-     * Adjust the game board if the player moves values down.
-     * @return <code>true</code> if and only if this move caused a change in the game board.
-     */
-    fun down(): MoveResult {
-        var changeOccurred = false
-        val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0
-
-        for (colIdx in 1..4) {
-            val col = currentGameState.getColumn(colIdx)
-            val shiftAndCollapseResult = shiftAndCollapse(col)
-
-            if (!equal(col, shiftAndCollapseResult.newRow)) {
-                changeOccurred = true
-            }
-            currentGameState.score += shiftAndCollapseResult.score
-            highestNewValue = max(highestNewValue, shiftAndCollapseResult.highestNewValue)
-
-            // Remove the old column.
-            currentGameState.state.keys.removeIf { it.col == colIdx }
-            // Insert the transformed column.
-            for (elt in shiftAndCollapseResult.newRow) {
-                currentGameState.state[Coor(elt.key, colIdx)] = elt.value
-            }
-        }
-
-        if (changeOccurred) {
-            updateHistory(cachedGameState)
-        }
-
-        return MoveResult(changeOccurred, highestNewValue)
     }
 
     fun undo() {
