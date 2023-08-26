@@ -14,7 +14,8 @@ import android.view.View
  */
 class GameBoardView : View, View.OnLayoutChangeListener {
 
-    private var gameBoard = GameState(HashMap(), 0)
+    //TODO?~ Parameterize the nr of rows and columns
+    private var gameBoard = GameState(4, 4, HashMap(), 0)
 
     // Paint for the text
     private val blackPaint = Paint()

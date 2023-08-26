@@ -17,7 +17,7 @@ class GameViewModelTest {
             Coor(2, 3) to 4,
             Coor(2, 4) to 8,
         )
-        val inputGameState = GameState(values,0)
+        val inputGameState = GameState(4, 4, values,0)
         viewModel.setGameState(inputGameState)
 
         viewModel.right()
@@ -43,9 +43,9 @@ class GameViewModelTest {
             Coor(1, 1) to 4,
             Coor(1, 2) to 8,
             Coor(1, 3) to 2,
-            // An empty fourth position is implied. //TODO?~ Explicitly set board size to have at least 4 columns?
+            // An empty fourth position is implied.
         )
-        val inputGameState = GameState(values,0)
+        val inputGameState = GameState(4, 4, values,0)
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.right()
@@ -61,8 +61,7 @@ class GameViewModelTest {
             Coor(1, 3) to 2,
             Coor(1, 4) to 16,
         )
-        //TODO?~ Explicitly set board size to have at least 4 columns?
-        val inputGameState = GameState(values, 0)
+        val inputGameState = GameState(4, 4, values, 0)
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.right()
@@ -78,7 +77,7 @@ class GameViewModelTest {
             // Note that column 3 remains empty this time.
             Coor(1, 4) to 2,
         )
-        val inputGameState = GameState(values,0)
+        val inputGameState = GameState(4, 4, values,0)
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.right()
@@ -98,7 +97,7 @@ class GameViewModelTest {
             Coor(2, 3) to 4,
             Coor(2, 4) to 2,
         )
-        val inputGameState = GameState(values,0)
+        val inputGameState = GameState(4, 4, values,0)
         viewModel.setGameState(inputGameState)
 
         viewModel.left()
@@ -127,7 +126,7 @@ class GameViewModelTest {
             Coor(1, 3) to 4,
             Coor(1, 4) to 8,
         )
-        val inputGameState = GameState(values, 0)
+        val inputGameState = GameState(4, 4, values, 0)
         viewModel.setGameState(inputGameState)
 
         viewModel.right()
@@ -148,7 +147,7 @@ class GameViewModelTest {
             Coor(1, 3) to 4,
             Coor(1, 4) to 4,
         )
-        val inputGameState = GameState(values, 0)
+        val inputGameState = GameState(4, 4, values, 0)
         viewModel.setGameState(inputGameState)
 
         viewModel.left()

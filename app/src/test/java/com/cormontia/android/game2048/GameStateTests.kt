@@ -12,16 +12,19 @@ class GameStateTests {
             Pair(Coor(4,4), 8)
         )
         val score = 40
-        val gameState = GameState(state, score)
+        val gameState = GameState(4, 4, state, score)
         val jsonResult = gameState.serialize()
-        assertEquals("40,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,8", jsonResult)
+        assertEquals("4,4,40,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,8", jsonResult)
     }
 
+    //TODO!~ Test serialization/deserialization when the nr of rows is DIFFERENT from the nr of columns!
     @Test
     fun testDeserialize() {
-        val str = "40,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,8"
-        val gameState = GameState(mutableMapOf(), 0)
+        val str = "4,4,40,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,8"
+        val gameState = GameState(4, 4, mutableMapOf(), 0)
         val actual = gameState.deserialize(str)
+        assertEquals(4, actual.nrOfRows)
+        assertEquals(4, actual.nrOfColumns)
         assertEquals(40, actual.score)
         assertEquals(4, actual.state[Coor(1,3)])
         assertEquals(8, actual.state[Coor(4,4)])
@@ -44,7 +47,7 @@ class GameStateTests {
             Coor(2, 4) to 2,
             Coor(2, 2) to 8,
         )
-        val gameState = GameState(fields, 0)
+        val gameState = GameState(2, 5, fields, 0)
 
         val actual = gameState.getRowAsFilteredList(2)
         val expected = listOf(3,8,2)

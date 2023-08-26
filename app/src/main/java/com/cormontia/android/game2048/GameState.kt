@@ -1,6 +1,6 @@
 package com.cormontia.android.game2048
 
-data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
+data class GameState(val nrOfRows: Int, val nrOfColumns: Int, val state: MutableMap<Coor, Int>, var score: Int) {
     /**
      * Make a deep copy of the current game state.
      * @return A new GameState, that is a copy of this one, but does not share state with this one.
@@ -8,7 +8,7 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     fun deepCopy(): GameState {
         val result = mutableMapOf<Coor, Int>()
         state.forEach { result[it.key] = it.value }
-        return GameState(result, score)
+        return GameState(nrOfRows, nrOfColumns, result, score)
     }
 
     /**
@@ -64,12 +64,14 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     //TODO!~ Either list "null" as "null" instead of "0", or don't make this an override of toString().
     // Right now it is confusing.
     fun serialize(): String {
-        //TODO!+ Add "nrOfRows, nrOfColumns" to the serialization!
-        // Game state is serialized as: [score, value of position (row-1,col-1), value of position (row-1, col-2)... value of position (row-4, col-4) ]
+        // Game state is serialized as: [nr of rows, nr of columns, score, value of position (row-1,col-1), value of position (row-1, col-2)... value of position (row-4, col-4) ]
         // If a position is empty, we use a 0 (zero).
         var idx = 0
-        val intArray = Array(17) { _ -> 0 }
+        // Nr of elements: nr of rows (1 field), nr of columns (1 field), score (1 field), values (nr of fields = nr of rows * nr of columns)
+        val intArray = Array(3 + nrOfRows * nrOfColumns) { _ -> 0 }
 
+        intArray[idx++] = nrOfRows
+        intArray[idx++] = nrOfColumns
         intArray[idx++] = score
         for (rowIdx in 1..4) {
             for (colIdx in 1..4) {
@@ -88,11 +90,13 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
             .split(",")
             .map { it.toInt() } //TODO!+ Handle NumberFormatException... and add a unit test for that case.
 
-        val score = values[0]
+        val nrOfRows = values[0]
+        val nrOfColumns = values[1]
+        val score = values[2]
         val fields = mutableMapOf<Coor,Int>()
         var rowIdx = 1
         var colIdx = 1
-        for (i in 1 until values.size) {
+        for (i in 3 until values.size) {
             val currentValue = values[i]
 
             if (currentValue != 0) {
@@ -101,13 +105,13 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
             }
 
             colIdx++
-            if (colIdx > 4) {
+            if (colIdx > nrOfColumns) {
                 rowIdx++
                 colIdx = 1
             }
 
         }
 
-        return GameState(fields, score)
+        return GameState(nrOfRows, nrOfColumns, fields, score)
     }
 }

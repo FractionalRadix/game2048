@@ -81,7 +81,8 @@ class MainActivity : AppCompatActivity() {
             val byteArray = fis.readBytes()
             val str = String(byteArray)
             //TODO!+ Make de-serializing a GameState a static method...
-            val dummyGameState = GameState(mutableMapOf(),0)
+            //TODO?~ Parameterize the nr of rows and columns.
+            val dummyGameState = GameState(4, 4, mutableMapOf(),0)
             val readGameState = dummyGameState.deserialize(str)
             gameViewModel.setGameState(readGameState)
             parcelFileDescriptor?.close()

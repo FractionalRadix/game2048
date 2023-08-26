@@ -8,18 +8,14 @@ import kotlin.collections.HashMap
 //TODO?~ We need TWO game-states here.
 // The present game state, and the game state that is being built from the player's move.
 // That saves a lot of deep-copying.
-// Also: note that if we switch to using "FieldList", a lot of the changes will be in-place.
 
 class GameViewModel : ViewModel() {
-    private var currentGameState = GameState(HashMap(),0)
+    //TODO?~ Parameterize nr of rows and nr of columns?
+    private var currentGameState = GameState(4, 4, HashMap(),0)
     private val random = Random()
 
     private var history = mutableListOf<GameState>()
     private var historyIndex = 0
-
-
-    private val nrOfRows = 4 //TODO!~ Must become a property of GameState.
-    private val nrOfColumns = 4 //TODO!~ Must become a property of GameState.
 
     /**
      * Check if the game has only just started, or if `init` is called due to an orientation change.
@@ -70,7 +66,8 @@ class GameViewModel : ViewModel() {
 
     fun startNewGame() {
         currentGameState.state.clear()
-        currentGameState = GameState(HashMap(), 0)
+        //TODO?~ Parameterize nr of rows and nr of columns?
+        currentGameState = GameState(4, 4, HashMap(), 0)
         placeNewValue()
 
         historyIndex = 0
@@ -111,8 +108,8 @@ class GameViewModel : ViewModel() {
      */
     private fun findEmptyPositions(): List<Coor> {
         val emptySlots = mutableListOf<Coor>()
-        for (rowIdx in 1..nrOfRows) {
-            for (colIdx in 1..nrOfColumns) {
+        for (rowIdx in 1..getGameState().nrOfRows) {
+            for (colIdx in 1..getGameState().nrOfColumns) {
                 if (!currentGameState.state.containsKey(Coor(rowIdx, colIdx))) {
                     emptySlots.add(Coor(rowIdx, colIdx))
                 }
@@ -131,15 +128,15 @@ class GameViewModel : ViewModel() {
             return true
 
         // 2. If there are at least 2 fields with the same value adjacent to each other, then the user can make a move.
-        for (rowIdx in 1..nrOfRows) {
-            for (colIdx in 1..nrOfColumns - 1) {
+        for (rowIdx in 1..getGameState().nrOfRows) {
+            for (colIdx in 1..getGameState().nrOfColumns - 1) {
                 if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx, colIdx + 1)])
                     return true
             }
         }
 
-        for (colIdx in 1..nrOfColumns) {
-            for (rowIdx in 1..nrOfRows - 1) {
+        for (colIdx in 1..getGameState().nrOfColumns) {
+            for (rowIdx in 1..getGameState().nrOfRows - 1) {
                 if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx + 1, colIdx)])
                     return true
             }
@@ -149,6 +146,7 @@ class GameViewModel : ViewModel() {
         return false
     }
 
+    //TODO?~ Move "right()", "left()", "up()", and "down()" to GameState?
     /**
      * Adjust the game board if the player moves values to the right.
      * Using the new "FieldList" interface.
@@ -160,7 +158,7 @@ class GameViewModel : ViewModel() {
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0
 
-        for (rowIdx in 1 .. nrOfRows) {
+        for (rowIdx in 1 .. getGameState().nrOfRows) {
 
             // Determine the new row. Also maintain the score.
             val row = currentGameState.getRowAsReverseFilteredList(rowIdx)
@@ -173,9 +171,9 @@ class GameViewModel : ViewModel() {
 
             // Insert the transformed row.
             // Note that the row is inserted in reverse order, since it was originally retrieved in reverse order.
-            val startPos = nrOfColumns - shiftedRow.size
-            for (colIdx in startPos until nrOfColumns) {
-                val value = shiftedRow[ nrOfColumns - colIdx  - 1]
+            val startPos = getGameState().nrOfColumns - shiftedRow.size
+            for (colIdx in startPos until getGameState().nrOfColumns) {
+                val value = shiftedRow[ getGameState().nrOfColumns - colIdx  - 1]
                 val coor = Coor(rowIdx, colIdx + 1)
                 currentGameState.state[coor] = value
             }
@@ -210,7 +208,7 @@ class GameViewModel : ViewModel() {
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0
 
-        for (rowIdx in 1 .. nrOfRows) {
+        for (rowIdx in 1 .. getGameState().nrOfRows) {
 
             // Determine the new row. Note if it is different from the old one, and maintain the score.
             val row = currentGameState.getRowAsFilteredList(rowIdx)
@@ -249,7 +247,7 @@ class GameViewModel : ViewModel() {
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0
 
-        for (colIdx in 1 .. nrOfColumns) {
+        for (colIdx in 1 .. getGameState().nrOfColumns) {
             // Determine the new column. Note if it is different from the old one, and maintain the score.
             val column = currentGameState.getColumnAsFilteredList(colIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(column)
@@ -287,7 +285,7 @@ class GameViewModel : ViewModel() {
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0
 
-        for (colIdx in 1 .. nrOfColumns) {
+        for (colIdx in 1 .. getGameState().nrOfColumns) {
             // Determine the new column. Also maintain the score.
             val column = currentGameState.getColumnAsReverseFilteredList(colIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(column)
@@ -299,9 +297,9 @@ class GameViewModel : ViewModel() {
 
             // Insert the transformed column.
             // Note that the column is inserted in reverse order, since it was originally retrieved in reverse order.
-            val startPos = nrOfRows - shiftedColumn.size
-            for (rowIdx in startPos until nrOfRows) {
-                val value = shiftedColumn[ nrOfRows - rowIdx  - 1]
+            val startPos = getGameState().nrOfRows - shiftedColumn.size
+            for (rowIdx in startPos until getGameState().nrOfRows) {
+                val value = shiftedColumn[ getGameState().nrOfRows - rowIdx  - 1]
                 val coor = Coor(rowIdx + 1, colIdx)
                 currentGameState.state[coor] = value
             }
