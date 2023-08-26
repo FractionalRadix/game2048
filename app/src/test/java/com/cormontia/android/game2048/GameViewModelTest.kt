@@ -21,6 +21,7 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
         viewModel.moveRightNewImplementation()
+        //viewModel.right()
 
         val outputGameState = viewModel.getGameState()
 
@@ -49,6 +50,7 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.moveRightNewImplementation()
+        //val res = viewModel.right()
 
         assert(res.changeOccurred)
     }
@@ -66,6 +68,7 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.moveRightNewImplementation()
+        //val res = viewModel.right()
 
         assert(!res.changeOccurred)
     }
@@ -82,6 +85,7 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
         val res = viewModel.moveRightNewImplementation()
+        //val res = viewModel.right()
 
         assert(res.changeOccurred)
     }
@@ -102,6 +106,7 @@ class GameViewModelTest {
         viewModel.setGameState(inputGameState)
 
         viewModel.moveLeftNewImplementation()
+        //viewModel.left()
 
         val outputGameState = viewModel.getGameState()
 
@@ -118,7 +123,51 @@ class GameViewModelTest {
         assert(outputGameState.score == 12)
     }
 
-        //TODO!~ Make more generic, and move to a utilities "class"...
+    @Test
+    fun when_shifting_right_the_rightmost_duplicates_get_collapsed() {
+        // (4,4,4,8) should become (_,4,8,8). Not (_,8,4,8).
+        val values = mutableMapOf(
+            Coor(1, 1) to 4,
+            Coor(1, 2) to 4,
+            Coor(1, 3) to 4,
+            Coor(1, 4) to 8,
+        )
+        val inputGameState = GameState(values, 0)
+        viewModel.setGameState(inputGameState)
+
+        viewModel.moveRightNewImplementation()
+        //viewModel.right()
+
+        val row = viewModel.getGameState().getRow(1)
+        assert(row.size == 3)
+        assert(row.containsEntry(2, 4))
+        assert(row.containsEntry(3, 8))
+        assert(row.containsEntry(4, 8))
+    }
+
+    @Test
+    fun when_shifting_left_the_leftmost_duplicates_get_collapsed() {
+        // (8,4,4,4) should become (8,8,4,_). Not (8,4,8,_).
+        val values = mutableMapOf(
+            Coor(1, 1) to 8,
+            Coor(1, 2) to 4,
+            Coor(1, 3) to 4,
+            Coor(1, 4) to 4,
+        )
+        val inputGameState = GameState(values, 0)
+        viewModel.setGameState(inputGameState)
+
+        viewModel.moveLeftNewImplementation()
+        //viewModel.left()
+
+        val row = viewModel.getGameState().getRow(1)
+        assert(row.size == 3)
+        assert(row.containsEntry(1, 8))
+        assert(row.containsEntry(2, 8))
+        assert(row.containsEntry(3, 4))
+    }
+
+    //TODO!~ Make more generic, and move to a utilities "class"...
     // (Might not even put it in a separate class, to make it widely available).
     private fun Map<Int,Int>.containsEntry(key: Int, value: Int) : Boolean {
         if (!this.containsKey(key))

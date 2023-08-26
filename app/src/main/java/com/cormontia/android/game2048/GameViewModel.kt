@@ -318,7 +318,6 @@ class GameViewModel : ViewModel() {
                 currentGameState.state[coor] = value
             }
 
-            //TODO!+ Add a unit test - "changeOccurred" should become true even if NO blocks get merged.
             //TODO?~ Maybe this could be done at a later stage.
             // Check if the new row is different from the original row.
             val originalRow = cachedGameState.getRow(rowIdx)
@@ -345,6 +344,7 @@ class GameViewModel : ViewModel() {
     //TODO!~ Get the parts in move[Right|Left|Up|Down] that differ, and use function parameters for these.
     //  Ultimately we want a generic "move(d: Direction)" method, where Direction is an enum containing Left, Right, Up, and Down.
 
+    //TODO!+ Add unit test: (4,4,4,8) should become (_,4,8,8) not (_8,4,8)....
     /**
      * Adjust the game board if the player moves values to the left.
      * Using the new "FieldList" interface.
@@ -374,7 +374,6 @@ class GameViewModel : ViewModel() {
                 currentGameState.state[coor] = value
             }
 
-            //TODO!+ Add a unit test - "changeOccurred" should become true even if NO blocks get merged.
             //TODO?~ Maybe this could be done at a later stage.
             // Check if the new row is different from the original row.
             val originalRow = cachedGameState.getRow(rowIdx)

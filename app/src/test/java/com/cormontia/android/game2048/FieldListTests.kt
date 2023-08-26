@@ -40,7 +40,7 @@ class FieldListTests {
 
     @Test
     fun testShiftAndCollapse_fieldOnlyAddedOnce() {
-        // 2,2,2,_ becomes 2,4,_,_
+        // 2,2,2,_ becomes 4,2,_,_
         //val input = listOf(2,2,2,null)
         val input = listOf(2,2,2)
         val output = FieldList.shiftCollapseAndCalculateScore(input).first
