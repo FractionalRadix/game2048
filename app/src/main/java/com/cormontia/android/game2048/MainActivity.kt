@@ -186,7 +186,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun down() {
-        move(fun() = gameViewModel.down())
+        move(fun() = gameViewModel.moveDownNewImplementation())
     }
 
     private fun move(moveInModel: () -> MoveResult) {

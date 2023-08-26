@@ -40,7 +40,7 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
             .map { it.value }
     }
 
-    fun getRowAsBackwardFilteredList(rowIdx: Int) : List<Int> {
+    fun getRowAsReverseFilteredList(rowIdx: Int) : List<Int> {
         return state
             .filterKeys { it.row == rowIdx }
             .toSortedMap( compareByDescending { it.col } )

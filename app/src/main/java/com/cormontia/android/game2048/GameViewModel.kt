@@ -302,7 +302,7 @@ class GameViewModel : ViewModel() {
         for (rowIdx in 1 .. nrOfRows) {
 
             // Determine the new row. Also maintain the score.
-            val row = currentGameState.getRowAsBackwardFilteredList(rowIdx)
+            val row = currentGameState.getRowAsReverseFilteredList(rowIdx)
             val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
             currentGameState.score += shiftAndCollapseResult.second
@@ -406,7 +406,7 @@ class GameViewModel : ViewModel() {
             }
 
             //TODO?~ Maybe this could be done at a later stage.
-            // Check if the new row is different from the original row.
+            // Check if the new column is different from the original column.
             val originalColumn = cachedGameState.getColumn(colIdx)
             val newColumn = currentGameState.getColumn(colIdx)
             changeOccurred = changeOccurred || !equal(originalColumn, newColumn)
@@ -427,8 +427,31 @@ class GameViewModel : ViewModel() {
         var highestNewValue = 0
 
         for (colIdx in 1 .. nrOfColumns) {
-            TODO()
-        }
+            // Determine the new column. Also maintain the score.
+            val column = currentGameState.getColumnAsReverseFilteredList(colIdx)
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(column)
+            val shiftedColumn = shiftAndCollapseResult.first
+            currentGameState.score += shiftAndCollapseResult.second
+
+            // Remove the old column.
+            currentGameState.state.keys.removeIf { it.col == colIdx }
+
+            // Insert the transformed column.
+            // Note that the column is inserted in reverse order, since it was originally retrieved in reverse order.
+            val startPos = nrOfRows - shiftedColumn.size
+            for (rowIdx in startPos until nrOfRows) {
+                val value = shiftedColumn[ nrOfRows - rowIdx  - 1]
+                val coor = Coor(rowIdx + 1, colIdx)
+                currentGameState.state[coor] = value
+            }
+
+            //TODO?~ Maybe this could be done at a later stage.
+            // Check if the new column is different from the original column.
+            val originalColumn = cachedGameState.getColumn(colIdx)
+            val newColumn = currentGameState.getColumn(colIdx)
+            changeOccurred = changeOccurred || !equal(originalColumn, newColumn)
+
+            highestNewValue = determineHighestNewValue(originalColumn, newColumn, highestNewValue)        }
 
         if (changeOccurred) {
             updateHistory(cachedGameState)
