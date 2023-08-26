@@ -38,12 +38,12 @@ class GameViewModelTest {
     }
 
     @Test
-    fun a_change_is_noted_when_positions_change_even_if_there_are_no_collapses() {
-        // Testing with three consecutive numbers. A "null" in the fourth position is implied. (Does the system know that?)
+    fun a_change_is_noted_for_consecutive_values_even_if_there_are_no_collapses() {
         val values = mutableMapOf(
             Coor(1, 1) to 4,
             Coor(1, 2) to 8,
             Coor(1, 3) to 2,
+            // An empty fourth position is implied. //TODO?~ Explicitly set board size to have at least 4 columns?
         )
         val inputGameState = GameState(values,0)
         viewModel.setGameState(inputGameState)
@@ -54,11 +54,28 @@ class GameViewModelTest {
     }
 
     @Test
-    fun a_change_is_noted_when_positions_change_even_if_there_are_no_collapses_2() {
-        // Same test, but now with a 'null' in the row.
+    fun when_positions_remain_unchanged_then_we_observe_that_there_is_no_change() {
         val values = mutableMapOf(
             Coor(1, 1) to 4,
             Coor(1, 2) to 8,
+            Coor(1, 3) to 2,
+            Coor(1, 4) to 16,
+        )
+        //TODO?~ Explicitly set board size to have at least 4 columns?
+        val inputGameState = GameState(values, 0)
+        viewModel.setGameState(inputGameState)
+
+        val res = viewModel.moveRightNewImplementation()
+
+        assert(!res.changeOccurred)
+    }
+
+    @Test
+    fun a_change_is_noted_for_rows_containing_empty_values_even_if_there_are_no_collapses() {
+        val values = mutableMapOf(
+            Coor(1, 1) to 4,
+            Coor(1, 2) to 8,
+            // Note that column 3 remains empty this time.
             Coor(1, 4) to 2,
         )
         val inputGameState = GameState(values,0)
