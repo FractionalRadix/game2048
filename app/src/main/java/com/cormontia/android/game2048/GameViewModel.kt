@@ -323,7 +323,7 @@ class GameViewModel : ViewModel() {
             // Check if the new row is different from the original row.
             val originalRow = cachedGameState.getRow(rowIdx)
             val newRow = currentGameState.getRow(rowIdx)
-            changeOccurred = changeOccurred || equal(originalRow, newRow)
+            changeOccurred = changeOccurred || !equal(originalRow, newRow)
 
             //TODO!+ Make this robust against empty lists.
             /*
@@ -333,7 +333,6 @@ class GameViewModel : ViewModel() {
                 highestNewValue = highestUpdatedValue
             }
              */
-
         }
 
         if (changeOccurred) {
@@ -380,7 +379,7 @@ class GameViewModel : ViewModel() {
             // Check if the new row is different from the original row.
             val originalRow = cachedGameState.getRow(rowIdx)
             val newRow = currentGameState.getRow(rowIdx)
-            changeOccurred = changeOccurred || equal(originalRow, newRow)
+            changeOccurred = changeOccurred || !equal(originalRow, newRow)
 
             //TODO!+ Make this robust against empty lists.
             /*
