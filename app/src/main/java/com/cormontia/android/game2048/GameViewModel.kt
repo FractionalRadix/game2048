@@ -217,8 +217,8 @@ class GameViewModel : ViewModel() {
      */
     private fun findEmptyPositions(): List<Coor> {
         val emptySlots = mutableListOf<Coor>()
-        for (rowIdx in 1..4) {
-            for (colIdx in 1..4) {
+        for (rowIdx in 1..nrOfRows) {
+            for (colIdx in 1..nrOfColumns) {
                 if (!currentGameState.state.containsKey(Coor(rowIdx, colIdx))) {
                     emptySlots.add(Coor(rowIdx, colIdx))
                 }
@@ -237,15 +237,15 @@ class GameViewModel : ViewModel() {
             return true
 
         // 2. If there are at least 2 fields with the same value adjacent to each other, then the user can make a move.
-        for (rowIdx in 1..4) {
-            for (colIdx in 1..3) {
+        for (rowIdx in 1..nrOfRows) {
+            for (colIdx in 1..nrOfColumns - 1) {
                 if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx, colIdx + 1)])
                     return true
             }
         }
 
-        for (colIdx in 1..4) {
-            for (rowIdx in 1..3) {
+        for (colIdx in 1..nrOfColumns) {
+            for (rowIdx in 1..nrOfRows - 1) {
                 if (currentGameState.state[Coor(rowIdx, colIdx)] == currentGameState.state[Coor(rowIdx + 1, colIdx)])
                     return true
             }
@@ -311,11 +311,10 @@ class GameViewModel : ViewModel() {
             currentGameState.state.keys.removeIf { it.row == rowIdx }
 
             // Insert the transformed row.
-            val revertedShiftedRow = shiftedRow.reversed()
+            // Note that the row is inserted in reverse order, since it was originally retrieved in reverse order.
             val startPos = nrOfColumns - shiftedRow.size
             for (colIdx in startPos until nrOfColumns) {
-                //val value = shiftedRow[colIdx - startPos]
-                val value = revertedShiftedRow[colIdx - startPos]
+                val value = shiftedRow[ nrOfColumns - colIdx  - 1]
                 val coor = Coor(rowIdx, colIdx + 1)
                 currentGameState.state[coor] = value
             }
@@ -326,14 +325,7 @@ class GameViewModel : ViewModel() {
             val newRow = currentGameState.getRow(rowIdx)
             changeOccurred = changeOccurred || !equal(originalRow, newRow)
 
-            //TODO!+ Make this robust against empty lists.
-            /*
-            val highestOriginalValue = originalRow.maxOf { it.value }
-            val highestUpdatedValue = newRow.maxOf { it.value }
-            if (highestUpdatedValue > highestOriginalValue && highestUpdatedValue > highestNewValue) {
-                highestNewValue = highestUpdatedValue
-            }
-             */
+            highestNewValue = determineHighestNewValue(originalRow, newRow, highestNewValue)
         }
 
         if (changeOccurred) {
@@ -346,7 +338,6 @@ class GameViewModel : ViewModel() {
     //TODO!~ Get the parts in move[Right|Left|Up|Down] that differ, and use function parameters for these.
     //  Ultimately we want a generic "move(d: Direction)" method, where Direction is an enum containing Left, Right, Up, and Down.
 
-    //TODO!+ Add unit test: (4,4,4,8) should become (_,4,8,8) not (_8,4,8)....
     /**
      * Adjust the game board if the player moves values to the left.
      * Using the new "FieldList" interface.
@@ -356,13 +347,13 @@ class GameViewModel : ViewModel() {
 
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
-        var highestNewValue = 0 //TODO!+ Use this one, it is used to check if 2048 (or higher) has been scored this round.
+        var highestNewValue = 0
 
         for (rowIdx in 1 .. nrOfRows) {
 
             // Determine the new row. Note if it is different from the old one, and maintain the score.
-            val row = currentGameState.getRowAsFilteredList(rowIdx) // For example, [2,2,8,4,8,8]
-            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)  // Our example becomes [4,8,4,16]
+            val row = currentGameState.getRowAsFilteredList(rowIdx)
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(row)
             val shiftedRow = shiftAndCollapseResult.first
             currentGameState.score += shiftAndCollapseResult.second
 
@@ -372,7 +363,7 @@ class GameViewModel : ViewModel() {
             // Insert the transformed row.
             for (colIdx in shiftedRow.indices) {
                 val value = shiftedRow[colIdx]
-                val coor = Coor(rowIdx, colIdx + 1)     // Our example becomes: col[0] -> 4, col[1] -> 8, col[2] -> 4, col[3] -> 16.
+                val coor = Coor(rowIdx, colIdx + 1)
                 currentGameState.state[coor] = value
             }
 
@@ -382,14 +373,7 @@ class GameViewModel : ViewModel() {
             val newRow = currentGameState.getRow(rowIdx)
             changeOccurred = changeOccurred || !equal(originalRow, newRow)
 
-            //TODO!+ Make this robust against empty lists.
-            /*
-            val highestOriginalValue = originalRow.maxOf { it.value }
-            val highestUpdatedValue = newRow.maxOf { it.value }
-            if (highestUpdatedValue > highestOriginalValue && highestUpdatedValue > highestNewValue) {
-                highestNewValue = highestUpdatedValue
-            }
-             */
+            highestNewValue = determineHighestNewValue(originalRow, newRow, highestNewValue)
         }
 
         if (changeOccurred) {
@@ -397,6 +381,79 @@ class GameViewModel : ViewModel() {
         }
 
         return MoveResult(changeOccurred, highestNewValue)
+    }
+
+    fun moveUpNewImplementation(): MoveResult {
+        var changeOccurred = false
+        val cachedGameState = currentGameState.deepCopy()
+        var highestNewValue = 0
+
+        for (colIdx in 1 .. nrOfColumns) {
+            // Determine the new column. Note if it is different from the old one, and maintain the score.
+            val column = currentGameState.getColumnAsFilteredList(colIdx)
+            val shiftAndCollapseResult = FieldList.shiftCollapseAndCalculateScore(column)
+            val shiftedColumn = shiftAndCollapseResult.first
+            currentGameState.score += shiftAndCollapseResult.second
+
+            // Remove the old column.
+            currentGameState.state.keys.removeIf { it.col == colIdx }
+
+            // Insert the transformed column.
+            for (rowIdx in shiftedColumn.indices) {
+                val value = shiftedColumn[rowIdx]
+                val coor = Coor(rowIdx + 1, colIdx)
+                currentGameState.state[coor] = value
+            }
+
+            //TODO?~ Maybe this could be done at a later stage.
+            // Check if the new row is different from the original row.
+            val originalColumn = cachedGameState.getColumn(colIdx)
+            val newColumn = currentGameState.getColumn(colIdx)
+            changeOccurred = changeOccurred || !equal(originalColumn, newColumn)
+
+            highestNewValue = determineHighestNewValue(originalColumn, newColumn, highestNewValue)
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
+        }
+
+        return MoveResult(changeOccurred, highestNewValue)
+    }
+
+    fun moveDownNewImplementation(): MoveResult {
+        var changeOccurred = false
+        val cachedGameState = currentGameState.deepCopy()
+        var highestNewValue = 0
+
+        for (colIdx in 1 .. nrOfColumns) {
+            TODO()
+        }
+
+        if (changeOccurred) {
+            updateHistory(cachedGameState)
+        }
+
+        return MoveResult(changeOccurred, highestNewValue)
+    }
+
+    //TODO?~ Use List<Int> instead of Map<Int,Int>  ?
+    // We may do this after unifying the up/down/left/right code.
+    private fun determineHighestNewValue(
+        originalRow: Map<Int, Int>,
+        newRow: Map<Int, Int>,
+        highestKnownValue: Int
+    ): Int {
+        var result = highestKnownValue
+        // Note that, if the original row is NOT empty, then neither will the new row be empty!
+        if (originalRow.isNotEmpty()) {
+            val highestOriginalValue = originalRow.maxOf { it.value }
+            val highestUpdatedValue = newRow.maxOf { it.value }
+            if (highestUpdatedValue > highestOriginalValue && highestUpdatedValue > result) {
+                result = highestUpdatedValue
+            }
+        }
+        return result
     }
 
     /**

@@ -15,6 +15,8 @@ class GameViewModelTest {
 
         fun right() = if (oldSystem) { viewModel.right() } else { viewModel.moveRightNewImplementation() }
         fun left() = if (oldSystem) { viewModel.left() } else { viewModel.moveLeftNewImplementation() }
+        fun up() = if (oldSystem) { viewModel.up() } else { viewModel.moveUpNewImplementation() }
+        fun down() = if (oldSystem) { viewModel.down() } else { viewModel.moveDownNewImplementation() }
 
         fun setGameState(gameState: GameState) { viewModel.setGameState(gameState) }
         fun getGameState(): GameState { return viewModel.getGameState() }

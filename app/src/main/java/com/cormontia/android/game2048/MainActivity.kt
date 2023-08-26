@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun up() {
-        move(fun() = gameViewModel.up())
+        move(fun() = gameViewModel.moveUpNewImplementation())
     }
 
     private fun down() {

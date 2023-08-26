@@ -64,6 +64,7 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     //TODO!~ Either list "null" as "null" instead of "0", or don't make this an override of toString().
     // Right now it is confusing.
     fun serialize(): String {
+        //TODO!+ Add "nrOfRows, nrOfColumns" to the serialization!
         // Game state is serialized as: [score, value of position (row-1,col-1), value of position (row-1, col-2)... value of position (row-4, col-4) ]
         // If a position is empty, we use a 0 (zero).
         var idx = 0
@@ -82,6 +83,7 @@ data class GameState(val state: MutableMap<Coor, Int>, var score: Int) {
     }
 
     fun deserialize(str: String): GameState {
+        //TODO!+ Add "nrOfRows, nrOfColumns" to the serialization!
         val values = str
             .split(",")
             .map { it.toInt() } //TODO!+ Handle NumberFormatException... and add a unit test for that case.
