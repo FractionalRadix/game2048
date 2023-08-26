@@ -3,8 +3,24 @@ package com.cormontia.android.game2048
 import org.junit.Test
 
 class GameViewModelTest {
+
     //TODO?~ Move this inside the individual tests? Would be cleaner.
-    private val viewModel = GameViewModel()
+
+    // Proxy class for GameViewModel, so we can easily change the SUT (System Under Test).
+    // With a single flag, we can change between testing the old and the new implementations of the shift-and-collapse code.
+    // That way we can use the same unit tests for both.
+    class ViewModelProxy {
+        private val viewModel = GameViewModel()
+        private val oldSystem = true
+
+        fun right() = if (oldSystem) { viewModel.right() } else { viewModel.moveRightNewImplementation() }
+        fun left() = if (oldSystem) { viewModel.left() } else { viewModel.moveLeftNewImplementation() }
+
+        fun setGameState(gameState: GameState) { viewModel.setGameState(gameState) }
+        fun getGameState(): GameState { return viewModel.getGameState() }
+    }
+
+    private val viewModelProxy = ViewModelProxy()
 
     @Test
     fun right_shift_collapses_doubles_and_gives_score() {
@@ -18,12 +34,11 @@ class GameViewModelTest {
             Coor(2, 4) to 8,
         )
         val inputGameState = GameState(values,0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        viewModel.moveRightNewImplementation()
-        //viewModel.right()
+        viewModelProxy.right()
 
-        val outputGameState = viewModel.getGameState()
+        val outputGameState = viewModelProxy.getGameState()
 
         val actualRow1 = outputGameState.getRow(1)
         assert(actualRow1.size == 1)
@@ -47,10 +62,9 @@ class GameViewModelTest {
             // An empty fourth position is implied. //TODO?~ Explicitly set board size to have at least 4 columns?
         )
         val inputGameState = GameState(values,0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        val res = viewModel.moveRightNewImplementation()
-        //val res = viewModel.right()
+        val res = viewModelProxy.right()
 
         assert(res.changeOccurred)
     }
@@ -65,10 +79,9 @@ class GameViewModelTest {
         )
         //TODO?~ Explicitly set board size to have at least 4 columns?
         val inputGameState = GameState(values, 0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        val res = viewModel.moveRightNewImplementation()
-        //val res = viewModel.right()
+        val res = viewModelProxy.right()
 
         assert(!res.changeOccurred)
     }
@@ -82,10 +95,9 @@ class GameViewModelTest {
             Coor(1, 4) to 2,
         )
         val inputGameState = GameState(values,0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        val res = viewModel.moveRightNewImplementation()
-        //val res = viewModel.right()
+        val res = viewModelProxy.right()
 
         assert(res.changeOccurred)
     }
@@ -103,12 +115,11 @@ class GameViewModelTest {
             Coor(2, 4) to 2,
         )
         val inputGameState = GameState(values,0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        viewModel.moveLeftNewImplementation()
-        //viewModel.left()
+        viewModelProxy.left()
 
-        val outputGameState = viewModel.getGameState()
+        val outputGameState = viewModelProxy.getGameState()
 
         val actualRow1 = outputGameState.getRow(1)
         assert(actualRow1.size == 1)
@@ -133,12 +144,11 @@ class GameViewModelTest {
             Coor(1, 4) to 8,
         )
         val inputGameState = GameState(values, 0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        viewModel.moveRightNewImplementation()
-        //viewModel.right()
+        viewModelProxy.right()
 
-        val row = viewModel.getGameState().getRow(1)
+        val row = viewModelProxy.getGameState().getRow(1)
         assert(row.size == 3)
         assert(row.containsEntry(2, 4))
         assert(row.containsEntry(3, 8))
@@ -155,12 +165,11 @@ class GameViewModelTest {
             Coor(1, 4) to 4,
         )
         val inputGameState = GameState(values, 0)
-        viewModel.setGameState(inputGameState)
+        viewModelProxy.setGameState(inputGameState)
 
-        viewModel.moveLeftNewImplementation()
-        //viewModel.left()
+        viewModelProxy.left()
 
-        val row = viewModel.getGameState().getRow(1)
+        val row = viewModelProxy.getGameState().getRow(1)
         assert(row.size == 3)
         assert(row.containsEntry(1, 8))
         assert(row.containsEntry(2, 8))
