@@ -154,7 +154,7 @@ class GameViewModel : ViewModel() {
      * Using the new "FieldList" interface.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun moveRightNewImplementation(): MoveResult {
+    fun right(): MoveResult {
 
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
@@ -204,7 +204,7 @@ class GameViewModel : ViewModel() {
      * Using the new "FieldList" interface.
      * @return <code>true</code> if and only if this move caused a change in the game board.
      */
-    fun moveLeftNewImplementation(): MoveResult {
+    fun left(): MoveResult {
 
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
@@ -244,7 +244,7 @@ class GameViewModel : ViewModel() {
         return MoveResult(changeOccurred, highestNewValue)
     }
 
-    fun moveUpNewImplementation(): MoveResult {
+    fun up(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0
@@ -282,7 +282,7 @@ class GameViewModel : ViewModel() {
         return MoveResult(changeOccurred, highestNewValue)
     }
 
-    fun moveDownNewImplementation(): MoveResult {
+    fun down(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
         var highestNewValue = 0

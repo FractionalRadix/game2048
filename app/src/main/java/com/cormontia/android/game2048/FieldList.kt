@@ -2,11 +2,7 @@ package com.cormontia.android.game2048
 
 class FieldList {
 
-    //TODO!~ Use this for the  "shift-and-collapse" functionality.
-    // That way we can give our rows and columns any (constant) length that we desire.
-
     //TODO?~ Move function above class declaration?
-    //TODO?+ Let it return if the output differs from the input? (Caller can also check that now...)
     companion object {
 
         fun shiftCollapseAndCalculateScore(l: List<Int>) : Pair<List<Int>, Int> {

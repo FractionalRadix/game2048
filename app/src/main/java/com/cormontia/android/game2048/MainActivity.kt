@@ -173,20 +173,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun right() {
         //move(fun() = gameViewModel.right())
-        move(fun() = gameViewModel.moveRightNewImplementation())
+        move(fun() = gameViewModel.right())
     }
 
     private fun left() {
         //move(fun() = gameViewModel.left())
-        move(fun() = gameViewModel.moveLeftNewImplementation())
+        move(fun() = gameViewModel.left())
     }
 
     private fun up() {
-        move(fun() = gameViewModel.moveUpNewImplementation())
+        move(fun() = gameViewModel.up())
     }
 
     private fun down() {
-        move(fun() = gameViewModel.moveDownNewImplementation())
+        move(fun() = gameViewModel.down())
     }
 
     private fun move(moveInModel: () -> MoveResult) {

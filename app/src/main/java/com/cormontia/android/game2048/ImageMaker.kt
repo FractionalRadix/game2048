@@ -64,7 +64,7 @@ class ImageMaker {
                 put(
                     MediaStore.Images.Media.IS_PENDING,
                     1
-                )  //TODO?~ Should it be Images.Media or Video.Media?
+                )
             }
             val contentResolver = context.contentResolver
             contentResolver.also { resolver ->
