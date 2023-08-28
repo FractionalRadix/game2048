@@ -10,8 +10,7 @@ import kotlin.collections.HashMap
 // That saves a lot of deep-copying.
 
 class GameViewModel : ViewModel() {
-    //TODO?~ Parameterize nr of rows and nr of columns?
-    private var currentGameState = GameState(4, 4, HashMap(),0)
+    private var currentGameState = GameState(MainActivity.nrOfRows, MainActivity.nrOfColumns, HashMap(),0)
     private val random = Random()
 
     private var history = mutableListOf<GameState>()
@@ -66,8 +65,7 @@ class GameViewModel : ViewModel() {
 
     fun startNewGame() {
         currentGameState.state.clear()
-        //TODO?~ Parameterize nr of rows and nr of columns?
-        currentGameState = GameState(4, 4, HashMap(), 0)
+        currentGameState = GameState(MainActivity.nrOfRows, MainActivity.nrOfColumns, HashMap(), 0)
         placeNewValue()
 
         historyIndex = 0

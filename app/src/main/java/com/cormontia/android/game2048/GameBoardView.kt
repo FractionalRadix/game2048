@@ -14,8 +14,7 @@ import android.view.View
  */
 class GameBoardView : View, View.OnLayoutChangeListener {
 
-    //TODO?~ Parameterize the nr of rows and columns
-    private var gameBoard = GameState(4, 4, HashMap(), 0)
+    private var gameBoard = GameState(MainActivity.nrOfRows, MainActivity.nrOfColumns, HashMap(), 0)
 
     // Paint for the text
     private val blackPaint = Paint()
@@ -131,8 +130,8 @@ class GameBoardView : View, View.OnLayoutChangeListener {
         // Analogous for the y offset.
         val x0 = contentWidth / 2 - 200
         val y0 = contentHeight / 2 - 200
-        for (r in 1..4) {
-            for (c in 1..4) {
+        for (r in 1..gameBoard.nrOfRows) {
+            for (c in 1..gameBoard.nrOfColumns) {
                 val x = paddingLeft + x0 + 100 * (c-1)
                 val y = paddingTop + y0 + 100 * (r-1)
                 val smallRect = Rect(x, y, x+90, y+90)

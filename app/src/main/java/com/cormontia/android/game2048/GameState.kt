@@ -73,8 +73,8 @@ data class GameState(val nrOfRows: Int, val nrOfColumns: Int, val state: Mutable
         intArray[idx++] = nrOfRows
         intArray[idx++] = nrOfColumns
         intArray[idx++] = score
-        for (rowIdx in 1..4) {
-            for (colIdx in 1..4) {
+        for (rowIdx in 1..nrOfRows) {
+            for (colIdx in 1..nrOfColumns) {
                 val coor = Coor(rowIdx, colIdx)
                 val value = this.state[coor]
                 intArray[idx++] = value ?: 0

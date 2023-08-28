@@ -25,6 +25,9 @@ class MainActivity : AppCompatActivity() {
         const val storageFileMimeType = "text/plain"
         const val bitmapMimeType = "img/bmp"
         const val jpegMimeType = "image/jpeg"
+
+        const val nrOfRows = 4
+        const val nrOfColumns = 4
     }
 
     private lateinit var gameViewModel: GameViewModel
@@ -81,8 +84,7 @@ class MainActivity : AppCompatActivity() {
             val byteArray = fis.readBytes()
             val str = String(byteArray)
             //TODO!+ Make de-serializing a GameState a static method...
-            //TODO?~ Parameterize the nr of rows and columns.
-            val dummyGameState = GameState(4, 4, mutableMapOf(),0)
+            val dummyGameState = GameState(nrOfRows, nrOfColumns, mutableMapOf(),0)
             val readGameState = dummyGameState.deserialize(str)
             gameViewModel.setGameState(readGameState)
             parcelFileDescriptor?.close()
