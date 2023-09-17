@@ -22,7 +22,7 @@ class ImageMaker {
         }
 
         private fun createImage(gameBoardView: GameBoardView): Bitmap {
-            //TODO!~ USe the right width and height. (As derived from the actual view...)
+            //TODO!~ Use the right width and height. (As derived from the actual view...)
             val bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             // We may want to get the background image or color from the View.

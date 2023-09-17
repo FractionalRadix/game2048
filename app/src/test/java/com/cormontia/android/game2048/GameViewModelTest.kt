@@ -159,6 +159,22 @@ class GameViewModelTest {
         assert(row.containsEntry(3, 4))
     }
 
+    @Test
+    fun testEmptySeriesToString() {
+        val series = mapOf<Int,Int>()
+        val text = viewModel.seriesToString(series)
+
+        assert(text == "")
+    }
+
+    @Test
+    fun testSeriesToString() {
+        val series = mapOf(1 to 2, 2 to 4, 3 to 0)
+        val text = viewModel.seriesToString(series)
+
+        assert(text == "(1->2), (2->4), (3->0)")
+    }
+
     //TODO!~ Make more generic, and move to a utilities "class"...
     // (Might not even put it in a separate class, to make it widely available).
     private fun Map<Int,Int>.containsEntry(key: Int, value: Int) : Boolean {

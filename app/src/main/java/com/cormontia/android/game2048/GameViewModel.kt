@@ -240,6 +240,14 @@ class GameViewModel : ViewModel() {
         return MoveResult(changeOccurred, highestNewValue)
     }
 
+    //TODO?- auxiliary function for debugging
+    fun seriesToString(series: Map<Int,Int>)=
+        series
+            .map {
+                "(${it.key}->${it.value})"
+            }
+            .joinToString(separator = ", ")
+
     fun up(): MoveResult {
         var changeOccurred = false
         val cachedGameState = currentGameState.deepCopy()
